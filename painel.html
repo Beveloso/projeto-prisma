@@ -1,0 +1,1048 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="
+        default-src 'self';
+        script-src 'self' https://cdn.jsdelivr.net;
+        style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+        font-src 'self' https://fonts.gstatic.com;
+        img-src 'self' data:;
+        connect-src 'self' https://jchzgqztsmvznjvrszet.supabase.co https://*.supabase.co wss://*.supabase.co;
+        object-src 'none';
+        base-uri 'self';
+        form-action 'self';
+        frame-ancestors 'none'
+    ">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="theme-color" content="#020617">
+    <title>Painel Prisma | Workspace Colaborativo</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cpath d='M32 8 52 20v24L32 56 12 44V20L32 8z' fill='none' stroke='%2394A3B8' stroke-width='4' stroke-linejoin='round'/%3E%3Cpath d='M32 17 44 24v16l-12 7-12-7V24l12-7z' fill='none' stroke='%2338BDF8' stroke-width='3' stroke-linejoin='round'/%3E%3Cpath d='M32 17v30M20 24l24 16M44 24 20 40' stroke='%2394A3B8' stroke-width='2.5' stroke-linecap='round' opacity='.72'/%3E%3C/svg%3E">
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
+</head>
+<body class="body-painel">
+
+    <!-- OVERLAY DE CARREGAMENTO INICIAL -->
+    <div id="painel-loading" class="painel-loading-overlay" aria-hidden="true" aria-label="Verificando sessão">
+        <div class="painel-loading-inner">
+            <svg class="painel-loading-logo" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <path d="M32 8 52 20v24L32 56 12 44V20L32 8z" fill="none" stroke="#94A3B8" stroke-width="4" stroke-linejoin="round"/>
+                <path d="M32 17 44 24v16l-12 7-12-7V24l12-7z" fill="none" stroke="#38BDF8" stroke-width="3" stroke-linejoin="round"/>
+                <path d="M32 17v30M20 24l24 16M44 24 20 40" stroke="#94A3B8" stroke-width="2.5" stroke-linecap="round" opacity=".72"/>
+            </svg>
+            <div class="painel-loading-spinner"></div>
+        </div>
+    </div>
+
+    <div id="mensagem-alerta-painel" class="mensagem-alerta oculto" role="alert" aria-live="assertive"></div>
+
+    <nav class="navbar" aria-label="Barra de navegação principal">
+        <div class="navbar-brand">
+            <svg class="navbar-logo-icon" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" width="28" height="28">
+                <path d="M32 8 52 20v24L32 56 12 44V20L32 8z" fill="none" stroke="#475569" stroke-width="3.5" stroke-linejoin="round"/>
+                <path d="M32 17 44 24v16l-12 7-12-7V24l12-7z" fill="none" stroke="#38BDF8" stroke-width="2.5" stroke-linejoin="round"/>
+                <path d="M32 17v30M20 24l24 16M44 24 20 40" stroke="#64748b" stroke-width="2" stroke-linecap="round" opacity=".6"/>
+            </svg>
+            <h1 class="logo-painel">Prisma <span>Consultoria</span></h1>
+        </div>
+        <div class="user-menu">
+            <div class="user-badge-wrap" aria-label="Usuário logado">
+                <div class="user-avatar-dot" aria-hidden="true"></div>
+                <span id="identificador-usuario" class="user-email">Carregando…</span>
+            </div>
+            <button id="btn-sair" class="btn-sair-nav" type="button">
+                <svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+                Sair
+            </button>
+        </div>
+    </nav>
+
+    <div class="dashboard-layout">
+
+        <aside class="sidebar" aria-label="Painel de clientes">
+            <div class="sidebar-top">
+                <h3>Carteira de Clientes</h3>
+                <p class="texto-standby">Selecione um cliente ou conecte uma sala.</p>
+                <div class="container-compartilhar-sala">
+                    <label for="input-codigo-sala" class="sr-only">Código da sala</label>
+                    <input type="text" id="input-codigo-sala" placeholder="Código da Sala"
+                           maxlength="32" autocomplete="off" spellcheck="false">
+                    <button id="btn-entrar-sala" class="btn-secundario-pequeno" type="button" title="Entrar na sala" aria-label="Entrar na sala">
+                        <svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M15 12H3"/></svg>
+                    </button>
+                </div>
+                <div class="sidebar-tools">
+                    <label for="input-busca-cliente" class="sr-only">Buscar cliente</label>
+                    <input type="text" id="input-busca-cliente" placeholder="Buscar cliente"
+                           maxlength="120" autocomplete="off">
+                    <label for="filtro-status-cliente" class="sr-only">Filtrar por status</label>
+                    <select id="filtro-status-cliente">
+                        <option value="todos">Todos os clientes</option>
+                        <option value="incompletos">Ficha incompleta</option>
+                        <option value="api-pendente">API pendente</option>
+                        <option value="prontos">Prontos para análise</option>
+                    </select>
+                    <label for="sort-clientes" class="sr-only">Ordenar por</label>
+                    <select id="sort-clientes">
+                        <option value="recente">↓ Mais recente</option>
+                        <option value="nome">A–Z Nome</option>
+                        <option value="patrimonio">↓ Patrimônio</option>
+                        <option value="completude">↓ Completude</option>
+                    </select>
+                </div>
+                <ul id="lista-clientes-standby" class="lista-clientes" aria-label="Lista de clientes"></ul>
+            </div>
+            <div class="sidebar-bottom">
+                <button id="btn-novo-cliente" class="btn-adicionar" type="button">+ Adicionar Cliente</button>
+            </div>
+        </aside>
+
+        <main class="main-content" aria-label="Conteúdo principal">
+
+            <!-- ESTADO VAZIO / DASHBOARD -->
+            <div id="estado-vazio" class="estado-vazio active">
+                <div class="dashboard-home">
+                    <div class="dashboard-hero">
+                        <div>
+                            <span class="eyebrow">Visão do consultor</span>
+                            <h2>Painel operacional Prisma</h2>
+                            <p>Monitore clientes, pendências de suitability, carteiras e próximas ações em um único ambiente.</p>
+                        </div>
+                        <button id="btn-dashboard-novo-cliente" class="btn-primario dashboard-action" type="button">
+                            <svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+                            Novo Cliente
+                        </button>
+                    </div>
+
+                    <div class="dashboard-metrics" role="list" aria-label="Métricas do consultor">
+                        <div class="dashboard-card" role="listitem">
+                            <div class="dash-card-icon" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                            </div>
+                            <span>Clientes</span>
+                            <strong id="dash-total-clientes">0</strong>
+                            <small>Total monitorado</small>
+                        </div>
+                        <div class="dashboard-card" role="listitem">
+                            <div class="dash-card-icon" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                            </div>
+                            <span>Patrimônio</span>
+                            <strong id="dash-patrimonio-total">R$ 0</strong>
+                            <small>Declarado nas fichas</small>
+                        </div>
+                        <div class="dashboard-card" role="listitem">
+                            <div class="dash-card-icon" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                            </div>
+                            <span>Suitability</span>
+                            <strong id="dash-api-pendente">0</strong>
+                            <small>Perfis pendentes</small>
+                        </div>
+                        <div class="dashboard-card" role="listitem">
+                            <div class="dash-card-icon" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+                            </div>
+                            <span>Follow-ups</span>
+                            <strong id="dash-tarefas-pendentes">0</strong>
+                            <small>Tarefas em aberto</small>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-grid">
+                        <section class="dashboard-panel" aria-label="Alertas inteligentes">
+                            <div class="panel-heading">
+                                <h3>Alertas inteligentes</h3>
+                                <span id="dash-alertas-count">0 itens</span>
+                            </div>
+                            <div id="lista-alertas-inteligentes" class="smart-alert-list"></div>
+                        </section>
+                        <section class="dashboard-panel" aria-label="Clientes recentes">
+                            <div class="panel-heading">
+                                <h3>Clientes recentes</h3>
+                                <span>Últimas fichas</span>
+                            </div>
+                            <div id="lista-clientes-recentes" class="recent-client-list"></div>
+                        </section>
+                    </div>
+                </div>
+            </div>
+
+            <!-- FORMULÁRIO DE SUITABILITY -->
+            <div id="container-form-suitability" class="form-oculto">
+                <div class="cabecalho-form">
+                    <h2 id="titulo-aba-suitability">Formulário de Suitability e Alocação Inicial</h2>
+                    <p>Preencha a ficha completa do cliente para análise de portfólio.</p>
+                </div>
+
+                <!-- WIZARD PROGRESS BAR -->
+                <div class="wizard-header" id="wizard-header" aria-label="Progresso do formulário">
+                    <div class="wizard-steps-track" role="list">
+                        <div class="wizard-step-dot active" role="listitem" data-step="1" title="Dados do Cliente"><span>1</span></div>
+                        <div class="wizard-step-line"></div>
+                        <div class="wizard-step-dot" role="listitem" data-step="2" title="Situação Financeira"><span>2</span></div>
+                        <div class="wizard-step-line"></div>
+                        <div class="wizard-step-dot" role="listitem" data-step="3" title="Perfil de Investidor"><span>3</span></div>
+                        <div class="wizard-step-line"></div>
+                        <div class="wizard-step-dot" role="listitem" data-step="4" title="Objetivos"><span>4</span></div>
+                        <div class="wizard-step-line"></div>
+                        <div class="wizard-step-dot" role="listitem" data-step="5" title="Restrições"><span>5</span></div>
+                        <div class="wizard-step-line"></div>
+                        <div class="wizard-step-dot" role="listitem" data-step="6" title="Cenário Familiar"><span>6</span></div>
+                        <div class="wizard-step-line"></div>
+                        <div class="wizard-step-dot" role="listitem" data-step="7" title="Resultado Esperado"><span>7</span></div>
+                        <div class="wizard-step-line"></div>
+                        <div class="wizard-step-dot" role="listitem" data-step="8" title="Distribuição"><span>8</span></div>
+                    </div>
+                    <div class="wizard-step-label" id="wizard-step-label" aria-live="polite">Passo 1 de 8 — Dados do Cliente</div>
+                </div>
+
+                <form id="form-suitability" autocomplete="off">
+
+                    <section class="form-section">
+                        <h3>1. Dados do Cliente</h3>
+                        <div class="grid-3">
+                            <label for="cli-nome" class="sr-only">Nome completo</label>
+                            <input type="text" id="cli-nome" placeholder="Nome Completo" maxlength="120" autocomplete="off">
+
+                            <label for="cli-idade" class="sr-only">Idade</label>
+                            <input type="number" id="cli-idade" placeholder="Idade" min="0" max="130">
+
+                            <label for="cli-estado-civil" class="sr-only">Estado Civil</label>
+                            <select id="cli-estado-civil">
+                                <option value="">Estado Civil</option>
+                                <option value="Solteiro">Solteiro(a)</option>
+                                <option value="Casado">Casado(a)</option>
+                                <option value="Divorciado">Divorciado(a)</option>
+                                <option value="Viuvo">Viúvo(a)</option>
+                            </select>
+
+                            <label for="cli-dependentes" class="sr-only">Dependentes</label>
+                            <input type="text" id="cli-dependentes" placeholder="Dependentes (Quantos?)" maxlength="40">
+
+                            <label for="cli-profissao" class="sr-only">Profissão</label>
+                            <input type="text" id="cli-profissao" placeholder="Profissão" maxlength="80">
+
+                            <label for="cli-cidade" class="sr-only">Cidade</label>
+                            <input type="text" id="cli-cidade" placeholder="Cidade" maxlength="80">
+
+                            <label for="cli-conhecimento" class="sr-only">Conhecimento Financeiro</label>
+                            <select id="cli-conhecimento">
+                                <option value="">Conhecimento Financeiro</option>
+                                <option value="Iniciante">Iniciante</option>
+                                <option value="Intermediario">Intermediário</option>
+                                <option value="Avancado">Avançado</option>
+                            </select>
+                        </div>
+                    </section>
+
+                    <section class="form-section">
+                        <h3>2. Situação Financeira</h3>
+                        <div class="grid-3">
+                            <label for="fin-renda" class="sr-only">Renda mensal líquida</label>
+                            <input type="text" id="fin-renda" placeholder="Renda mensal líquida (R$)" maxlength="30">
+
+                            <label for="fin-renda-conjuge" class="sr-only">Renda do cônjuge</label>
+                            <input type="text" id="fin-renda-conjuge" placeholder="Renda esposa/esposo (R$)" maxlength="30">
+
+                            <label for="fin-despesas" class="sr-only">Despesas mensais</label>
+                            <input type="text" id="fin-despesas" placeholder="Despesas mensais (R$)" maxlength="30">
+
+                            <label for="fin-aporte" class="sr-only">Capacidade de aporte mensal</label>
+                            <input type="text" id="fin-aporte" placeholder="Capacidade de aporte mensal (R$)" maxlength="30">
+
+                            <label for="fin-imoveis" class="sr-only">Imóveis</label>
+                            <input type="text" id="fin-imoveis" placeholder="Imóveis (Valor Aprox.)" maxlength="30">
+
+                            <label for="fin-dividas" class="sr-only">Dívidas</label>
+                            <input type="text" id="fin-dividas" placeholder="Dívidas (Valor Total)" maxlength="30">
+
+                            <label for="fin-patrimonio" class="sr-only">Patrimônio a alocar</label>
+                            <input type="text" id="fin-patrimonio" placeholder="Patrimônio a alocar (R$)" class="input-destaque" maxlength="30">
+                        </div>
+                    </section>
+
+                    <section class="form-section">
+                        <h3>3. Perfil de Investidor (Motor API CVM 30)</h3>
+                        <div class="grid-2" style="align-items:center;background:#0f172a;padding:24px;border-radius:8px;border:1px solid #1e293b;">
+                            <div>
+                                <span style="color:#64748b;font-size:12px;text-transform:uppercase;font-weight:600;letter-spacing:0.5px;">Perfil Determinado</span>
+                                <h4 id="display-perfil-calculado" style="color:#f8fafc;font-size:24px;margin-top:4px;font-weight:600;">Pendente</h4>
+                                <span id="display-pontuacao-calculada" style="color:#38BDF8;font-size:14px;font-weight:500;">Pontuação: 0 / 95</span>
+                                <p id="aviso-gatilho-api" style="color:#f87171;font-size:13px;margin-top:10px;font-weight:500;line-height:1.5;display:none;background:rgba(248,113,113,0.1);padding:8px 12px;border-radius:6px;" role="alert"></p>
+                            </div>
+                            <div style="text-align:right;">
+                                <button type="button" id="btn-abrir-questionario" class="btn-secundario accent" style="width:100%;justify-content:center;">
+                                    <svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"></path></svg>
+                                    Preencher API Oficial
+                                </button>
+                            </div>
+                        </div>
+                        <input type="hidden" id="perfil-investidor-resultado" value="Pendente">
+                        <input type="hidden" id="perfil-investidor-pontuacao" value="0">
+                        <div class="campo-textarea-grupo mt-20">
+                            <label class="label-textarea" for="perfil-caracteristicas">Características Declaradas Adicionais</label>
+                            <textarea id="perfil-caracteristicas" placeholder="Ex: Aceita volatilidade no curto prazo…" rows="3" maxlength="1000"></textarea>
+                        </div>
+                    </section>
+
+                    <section class="form-section">
+                        <h3>4. Objetivos Financeiros</h3>
+                        <div class="table-wrapper">
+                            <table class="tabela-prisma">
+                                <thead>
+                                    <tr><th>Objetivo</th><th>Horizonte</th><th>Valor Alvo (R$)</th><th>Observação</th></tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Reserva de emergência</td>
+                                        <td><input type="text" id="obj-reserva-horizonte" class="input-tabela" value="Imediato" placeholder="Ex: 6 meses" maxlength="40"></td>
+                                        <td><input type="text" id="obj-reserva-val" class="input-tabela" placeholder="R$" maxlength="30"></td>
+                                        <td><input type="text" id="obj-reserva-obs" value="6 meses de despesas, alta liquidez" class="input-tabela" maxlength="120"></td>
+                                    </tr>
+                                    <tr>
+                                        <td><input type="text" id="obj-2-nome" placeholder="Ex: Troca de Carro" class="input-tabela" maxlength="80"></td>
+                                        <td><input type="text" id="obj-2-horizonte" class="input-tabela" placeholder="Ex: 3–6 anos" maxlength="40"></td>
+                                        <td><input type="text" id="obj-2-val" class="input-tabela" placeholder="R$" maxlength="30"></td>
+                                        <td><input type="text" id="obj-2-obs" class="input-tabela" maxlength="120"></td>
+                                    </tr>
+                                    <tr>
+                                        <td><input type="text" id="obj-3-nome" placeholder="Ex: Imóvel" class="input-tabela" maxlength="80"></td>
+                                        <td><input type="text" id="obj-3-horizonte" class="input-tabela" placeholder="Ex: 5–7 anos" maxlength="40"></td>
+                                        <td><input type="text" id="obj-3-val" class="input-tabela" placeholder="R$" maxlength="30"></td>
+                                        <td><input type="text" id="obj-3-obs" class="input-tabela" maxlength="120"></td>
+                                    </tr>
+                                    <tr>
+                                        <td><input type="text" id="obj-4-nome" placeholder="Ex: Faculdade dos Filhos" class="input-tabela" maxlength="80"></td>
+                                        <td><input type="text" id="obj-4-horizonte" class="input-tabela" placeholder="Ex: 18 anos" maxlength="40"></td>
+                                        <td><input type="text" id="obj-4-val" class="input-tabela" placeholder="R$" maxlength="30"></td>
+                                        <td><input type="text" id="obj-4-obs" class="input-tabela" maxlength="120"></td>
+                                    </tr>
+                                    <tr>
+                                        <td><input type="text" id="obj-5-nome" placeholder="Ex: Aposentadoria" class="input-tabela" maxlength="80"></td>
+                                        <td><input type="text" id="obj-5-horizonte" class="input-tabela" placeholder="Ex: Longo prazo" maxlength="40"></td>
+                                        <td><input type="text" id="obj-5-val" class="input-tabela" placeholder="R$" maxlength="30"></td>
+                                        <td><input type="text" id="obj-5-obs" class="input-tabela" maxlength="120"></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </section>
+
+                    <section class="form-section">
+                        <h3>5. Restrições e Preferências</h3>
+                        <div class="grid-2">
+                            <div class="campo-textarea-grupo">
+                                <label class="label-textarea" for="rest-liquidez">Liquidez</label>
+                                <textarea id="rest-liquidez" placeholder="Ex: Mínimo de R$ 50k com liquidez D+1." rows="3" maxlength="600"></textarea>
+                            </div>
+                            <div class="campo-textarea-grupo">
+                                <label class="label-textarea" for="rest-tributacao">Tributação e Previdência</label>
+                                <textarea id="rest-tributacao" placeholder="Ex: Interesse em PGBL." rows="3" maxlength="600"></textarea>
+                            </div>
+                            <div class="campo-textarea-grupo">
+                                <label class="label-textarea" for="rest-aversoes">Aversões declaradas</label>
+                                <textarea id="rest-aversoes" placeholder="Ex: Aversão a fundos voláteis." rows="3" maxlength="600"></textarea>
+                            </div>
+                            <div class="campo-textarea-grupo">
+                                <label class="label-textarea" for="rest-preferencias">Preferências</label>
+                                <textarea id="rest-preferencias" placeholder="Ex: Preferência por dividendos." rows="3" maxlength="600"></textarea>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="form-section">
+                        <h3>6. Cenário Familiar e Sucessório</h3>
+                        <div class="campo-textarea-grupo">
+                            <label class="label-textarea" for="sucessorio-detalhes">Detalhes do cenário familiar</label>
+                            <textarea id="sucessorio-detalhes" placeholder="Descreva o cenário familiar atual…" rows="4" maxlength="1000"></textarea>
+                        </div>
+                    </section>
+
+                    <section class="form-section">
+                        <h3>7. Resultado Esperado</h3>
+                        <div class="campo-textarea-grupo">
+                            <label class="label-textarea" for="resultado-esperado">Expectativa do cliente</label>
+                            <textarea id="resultado-esperado" placeholder="O que o cliente espera de entrega efetiva…" rows="4" maxlength="1000"></textarea>
+                        </div>
+                    </section>
+
+                    <section class="form-section">
+                        <h3>8. Distribuição Inicial Sugerida (Referência)</h3>
+                        <div class="table-wrapper">
+                            <table class="tabela-prisma" id="tabela-sugestoes-suitability">
+                                <thead><tr><th>Classe</th><th>% Sugerido</th><th>Valor (R$)</th></tr></thead>
+                                <tbody>
+                                    <tr><td>Renda Fixa Tradicional</td>  <td><input type="text" value="30%" class="input-tabela text-center sug-p" maxlength="10"></td><td><input type="text" placeholder="R$" class="input-tabela sug-v" maxlength="20"></td></tr>
+                                    <tr><td>Crédito Privado</td>         <td><input type="text" value="15%" class="input-tabela text-center sug-p" maxlength="10"></td><td><input type="text" placeholder="R$" class="input-tabela sug-v" maxlength="20"></td></tr>
+                                    <tr><td>Ações</td>                   <td><input type="text" value="15%" class="input-tabela text-center sug-p" maxlength="10"></td><td><input type="text" placeholder="R$" class="input-tabela sug-v" maxlength="20"></td></tr>
+                                    <tr><td>Fundos Imobiliários</td>     <td><input type="text" value="10%" class="input-tabela text-center sug-p" maxlength="10"></td><td><input type="text" placeholder="R$" class="input-tabela sug-v" maxlength="20"></td></tr>
+                                    <tr><td>Fundos de Investimento</td>  <td><input type="text" value="15%" class="input-tabela text-center sug-p" maxlength="10"></td><td><input type="text" placeholder="R$" class="input-tabela sug-v" maxlength="20"></td></tr>
+                                    <tr><td>Derivativos / Estruturados</td><td><input type="text" value="5%" class="input-tabela text-center sug-p" maxlength="10"></td><td><input type="text" placeholder="R$" class="input-tabela sug-v" maxlength="20"></td></tr>
+                                    <tr><td>Previdência</td>             <td><input type="text" value="10%" class="input-tabela text-center sug-p" maxlength="10"></td><td><input type="text" placeholder="R$" class="input-tabela sug-v" maxlength="20"></td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </section>
+
+                    <!-- NAVEGAÇÃO DO WIZARD -->
+                    <div class="wizard-nav" id="wizard-nav">
+                        <button type="button" id="wizard-btn-anterior" class="btn-secundario" style="display:none;">
+                            <svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+                            Anterior
+                        </button>
+                        <div class="wizard-nav-spacer"></div>
+                        <button type="button" id="wizard-btn-proximo" class="btn-primario" style="width:auto;padding:0 28px;">
+                            Próximo
+                            <svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                        </button>
+                        <button type="button" id="btn-salvar-cliente" class="btn-primario" style="display:none;width:auto;padding:0 28px;">
+                            <svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+                            Salvar Ficha
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- WORKSPACE DO CLIENTE -->
+            <div id="container-workspace-cliente" class="form-oculto">
+                <div class="cabecalho-workspace-dinamico">
+                    <div>
+                        <div class="alinhamento-titulo-suit">
+                            <h2 id="nome-cabecalho-cliente">Cliente Selecionado</h2>
+                            <button id="btn-ver-resumo-ativo" class="btn-secundario-pequeno" type="button">
+                                <svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                                Resumo
+                            </button>
+                            <button id="btn-editar-suitability-ativo" class="btn-secundario-pequeno" type="button">
+                                <svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                                Editar Ficha
+                            </button>
+                            <button id="btn-alternar-analytics-view" class="btn-secundario-pequeno accent" type="button">
+                                <svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+                                Análise Quantitativa
+                            </button>
+                        </div>
+                        <p id="patrimonio-cabecalho-cliente">Patrimônio: R$ –</p>
+                    </div>
+                    <div class="tag-sala-compartilhada" aria-label="Código da sala compartilhada">
+                        <span>Código da Sala:</span>
+                        <strong id="label-codigo-sala">——</strong>
+                    </div>
+                </div>
+
+                <section class="cliente-executivo-grid" aria-label="Resumo executivo do cliente">
+                    <div class="executive-card principal">
+                        <span class="eyebrow">Resumo executivo</span>
+                        <h3 id="exec-nome-cliente">Cliente selecionado</h3>
+                        <p id="exec-descricao-cliente">Acompanhe perfil, patrimônio, pendências e decisões registradas.</p>
+                        <div class="executive-actions">
+                            <button id="btn-gerar-relatorio-cliente" class="btn-secundario-pequeno accent" type="button">
+                                <svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><path d="M14 2v6h6M16 13H8M16 17H8"></path></svg>
+                                Relatório
+                            </button>
+                            <button id="btn-adicionar-tarefa-cliente" class="btn-secundario-pequeno" type="button">
+                                <svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+                                Follow-up
+                            </button>
+                        </div>
+                    </div>
+                    <div class="executive-card">
+                        <span>Completude</span>
+                        <strong id="exec-completude">0%</strong>
+                        <div class="progress-track" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+                            <div id="exec-completude-barra"></div>
+                        </div>
+                    </div>
+                    <div class="executive-card">
+                        <span>Perfil</span>
+                        <strong id="exec-perfil">Pendente</strong>
+                        <small id="exec-pontuacao">API não calculada</small>
+                    </div>
+                    <div class="executive-card">
+                        <span>Pendências</span>
+                        <strong id="exec-pendencias">0</strong>
+                        <small id="exec-pendencias-texto">Nenhuma pendência crítica</small>
+                    </div>
+                </section>
+
+                <section class="cliente-followups-panel" aria-label="Follow-ups do cliente">
+                    <div class="panel-heading">
+                        <h3>Próximos passos do cliente</h3>
+                        <span id="cliente-tarefas-count">0 pendentes</span>
+                    </div>
+                    <div id="lista-tarefas-cliente" class="task-list"></div>
+                </section>
+
+                <!-- Tabs de navegação — onclick gerenciados por JS com data-classe -->
+                <div id="navegacao-classes-ativos-wrapper" class="tabs-navegacao-ativos" role="tablist" aria-label="Classes de ativos">
+                    <button class="tab-button active" type="button" role="tab" data-classe="renda_fixa">Renda Fixa Tradicional</button>
+                    <button class="tab-button" type="button" role="tab" data-classe="credito_privado">Crédito Privado</button>
+                    <button class="tab-button" type="button" role="tab" data-classe="acoes">Ações</button>
+                    <button class="tab-button" type="button" role="tab" data-classe="fundos_imobiliarios">Fundos Imobiliários</button>
+                    <button class="tab-button" type="button" role="tab" data-classe="fundos_investimento">Fundos de Investimento</button>
+                    <button class="tab-button" type="button" role="tab" data-classe="derivativos">Derivativos / Estruturados</button>
+                    <button class="tab-button" type="button" role="tab" data-classe="previdencia">Previdência</button>
+                    <button class="tab-button" type="button" role="tab" data-classe="alocacao_percentual">Percentuais</button>
+                </div>
+
+                <div id="container-alocacao-tradicional" class="grid-workspace-temporal">
+                    <div class="timeline-lateral" aria-label="Histórico de comitês">
+                        <h4>Comitês (Histórico)</h4>
+                        <button id="btn-novo-dia-linha" class="btn-novo-dia" type="button">
+                            <svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+                            Novo Dia
+                        </button>
+                        <ul id="lista-dias-timeline" class="lista-dias-ul"></ul>
+                    </div>
+                    <div class="conteudo-dia-ativo">
+                        <div id="card-investimento-dia" class="card-investimento">
+                            <div class="header-card-dia">
+                                <h3 id="titulo-classe-ativa">Classe Ativa</h3>
+                                <div class="acoes-dia">
+                                    <span id="data-badge-ativa" class="badge-data">Dia: Selecione</span>
+                                    <button id="btn-exportar-pdf" class="btn-export-pdf" type="button" aria-label="Exportar PDF profissional desta aba">
+                                        <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M9 13h6M9 17h4"/></svg>
+                                        Exportar PDF
+                                    </button>
+                                    <button id="btn-editar-data" class="btn-icon" type="button" title="Modificar data" aria-label="Modificar data">
+                                        <svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                                    </button>
+                                    <button id="btn-excluir-data" class="btn-icon danger" type="button" title="Excluir dia inteiro" aria-label="Excluir dia inteiro">
+                                        <svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                                    </button>
+                                </div>
+                            </div>
+                            <!-- BANNER: alocação percentual da classe ativa para esta data -->
+                            <div id="banner-alocacao-classe-ativa" class="banner-alocacao-classe oculto" aria-live="polite"></div>
+                            <div class="table-wrapper">
+                                <table class="tabela-prisma tabela-dinamica" aria-label="Ativos do dia">
+                                    <thead>
+                                        <tr>
+                                            <th>Ativo / Ticker</th>
+                                            <th id="th-coluna-especifica">Detalhamento</th>
+                                            <th style="width:160px;">Data de Alocação</th>
+                                            <th style="width:200px;">Valor Alocado (R$)</th>
+                                            <th style="width:60px;text-align:center;">
+                                                <span class="sr-only">Excluir linha</span>
+                                                <svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="corpo-tabela-ativos-dia"></tbody>
+                                </table>
+                            </div>
+                            <button id="btn-adicionar-linha-tabela" class="btn-ghost" type="button">
+                                <svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+                                Adicionar Novo Ativo
+                            </button>
+                            <div class="campo-textarea-grupo mt-20 bloco-tese-investimento">
+                                <div class="label-textarea-row">
+                                    <label class="label-textarea" for="txt-tese-investimento-dia">Tese de Investimento (Visão do Comitê)</label>
+                                    <span id="tese-autoria-indicador" class="autoria-hover-chip oculto" tabindex="0">Autoria</span>
+                                </div>
+                                <textarea id="txt-tese-investimento-dia" placeholder="Justifique a entrada, manutenção ou saída dos ativos nesta data específica…" rows="5" maxlength="3000"></textarea>
+                            </div>
+
+                            <!-- PAINEL PERCENTUAL — visível apenas na aba Percentuais -->
+                            <div id="painel-percentual-exclusivo" class="painel-pct-exclusivo oculto">
+                                <div class="pct-exclusivo-topo">
+                                    <div class="pct-exclusivo-info">
+                                        <span class="eyebrow">Distribuição da carteira</span>
+                                        <h3 id="pct-titulo-data">Comitê: —</h3>
+                                        <p>Registre a alocação percentual por classe de ativos para este comitê. Os percentuais são salvos por data e não afetam registros anteriores.</p>
+                                    </div>
+                                    <div class="pct-donut-wrap" aria-hidden="true">
+                                        <svg id="pct-donut-svg" viewBox="0 0 120 120" class="pct-donut-svg">
+                                            <circle cx="60" cy="60" r="48" fill="none" stroke="#1e293b" stroke-width="14"/>
+                                            <g id="pct-donut-segments"></g>
+                                            <text x="60" y="55" text-anchor="middle" class="pct-donut-label-pct" id="pct-donut-total-txt">0%</text>
+                                            <text x="60" y="70" text-anchor="middle" class="pct-donut-label-sub">alocado</text>
+                                        </svg>
+                                    </div>
+                                </div>
+
+                                <div class="pct-exclusivo-grade">
+                                    <div class="pct-classe-item" data-classe-pct="renda_fixa">
+                                        <div class="pct-classe-cor" style="--cor:#38BDF8"></div>
+                                        <div class="pct-classe-corpo">
+                                            <div class="pct-classe-topo">
+                                                <span class="pct-classe-nome">Renda Fixa Tradicional</span>
+                                                <div class="pct-classe-input-wrap">
+                                                    <input type="number" class="alocacao-pct-input pct-classe-input" data-classe-pct="renda_fixa" min="0" max="100" step="0.1" placeholder="0">
+                                                    <span>%</span>
+                                                </div>
+                                            </div>
+                                            <div class="pct-classe-barra-track"><div class="pct-classe-barra" style="--cor:#38BDF8; width:0%"></div></div>
+                                            <span class="pct-classe-valor-equiv" id="pct-equiv-renda_fixa"></span>
+                                        </div>
+                                    </div>
+                                    <div class="pct-classe-item" data-classe-pct="credito_privado">
+                                        <div class="pct-classe-cor" style="--cor:#818CF8"></div>
+                                        <div class="pct-classe-corpo">
+                                            <div class="pct-classe-topo">
+                                                <span class="pct-classe-nome">Crédito Privado</span>
+                                                <div class="pct-classe-input-wrap">
+                                                    <input type="number" class="alocacao-pct-input pct-classe-input" data-classe-pct="credito_privado" min="0" max="100" step="0.1" placeholder="0">
+                                                    <span>%</span>
+                                                </div>
+                                            </div>
+                                            <div class="pct-classe-barra-track"><div class="pct-classe-barra" style="--cor:#818CF8; width:0%"></div></div>
+                                            <span class="pct-classe-valor-equiv" id="pct-equiv-credito_privado"></span>
+                                        </div>
+                                    </div>
+                                    <div class="pct-classe-item" data-classe-pct="acoes">
+                                        <div class="pct-classe-cor" style="--cor:#4ADE80"></div>
+                                        <div class="pct-classe-corpo">
+                                            <div class="pct-classe-topo">
+                                                <span class="pct-classe-nome">Ações</span>
+                                                <div class="pct-classe-input-wrap">
+                                                    <input type="number" class="alocacao-pct-input pct-classe-input" data-classe-pct="acoes" min="0" max="100" step="0.1" placeholder="0">
+                                                    <span>%</span>
+                                                </div>
+                                            </div>
+                                            <div class="pct-classe-barra-track"><div class="pct-classe-barra" style="--cor:#4ADE80; width:0%"></div></div>
+                                            <span class="pct-classe-valor-equiv" id="pct-equiv-acoes"></span>
+                                        </div>
+                                    </div>
+                                    <div class="pct-classe-item" data-classe-pct="fundos_imobiliarios">
+                                        <div class="pct-classe-cor" style="--cor:#FB923C"></div>
+                                        <div class="pct-classe-corpo">
+                                            <div class="pct-classe-topo">
+                                                <span class="pct-classe-nome">Fundos Imobiliários</span>
+                                                <div class="pct-classe-input-wrap">
+                                                    <input type="number" class="alocacao-pct-input pct-classe-input" data-classe-pct="fundos_imobiliarios" min="0" max="100" step="0.1" placeholder="0">
+                                                    <span>%</span>
+                                                </div>
+                                            </div>
+                                            <div class="pct-classe-barra-track"><div class="pct-classe-barra" style="--cor:#FB923C; width:0%"></div></div>
+                                            <span class="pct-classe-valor-equiv" id="pct-equiv-fundos_imobiliarios"></span>
+                                        </div>
+                                    </div>
+                                    <div class="pct-classe-item" data-classe-pct="fundos_investimento">
+                                        <div class="pct-classe-cor" style="--cor:#F472B6"></div>
+                                        <div class="pct-classe-corpo">
+                                            <div class="pct-classe-topo">
+                                                <span class="pct-classe-nome">Fundos de Investimento</span>
+                                                <div class="pct-classe-input-wrap">
+                                                    <input type="number" class="alocacao-pct-input pct-classe-input" data-classe-pct="fundos_investimento" min="0" max="100" step="0.1" placeholder="0">
+                                                    <span>%</span>
+                                                </div>
+                                            </div>
+                                            <div class="pct-classe-barra-track"><div class="pct-classe-barra" style="--cor:#F472B6; width:0%"></div></div>
+                                            <span class="pct-classe-valor-equiv" id="pct-equiv-fundos_investimento"></span>
+                                        </div>
+                                    </div>
+                                    <div class="pct-classe-item" data-classe-pct="derivativos">
+                                        <div class="pct-classe-cor" style="--cor:#FBBF24"></div>
+                                        <div class="pct-classe-corpo">
+                                            <div class="pct-classe-topo">
+                                                <span class="pct-classe-nome">Derivativos / Estruturados</span>
+                                                <div class="pct-classe-input-wrap">
+                                                    <input type="number" class="alocacao-pct-input pct-classe-input" data-classe-pct="derivativos" min="0" max="100" step="0.1" placeholder="0">
+                                                    <span>%</span>
+                                                </div>
+                                            </div>
+                                            <div class="pct-classe-barra-track"><div class="pct-classe-barra" style="--cor:#FBBF24; width:0%"></div></div>
+                                            <span class="pct-classe-valor-equiv" id="pct-equiv-derivativos"></span>
+                                        </div>
+                                    </div>
+                                    <div class="pct-classe-item" data-classe-pct="previdencia">
+                                        <div class="pct-classe-cor" style="--cor:#A78BFA"></div>
+                                        <div class="pct-classe-corpo">
+                                            <div class="pct-classe-topo">
+                                                <span class="pct-classe-nome">Previdência</span>
+                                                <div class="pct-classe-input-wrap">
+                                                    <input type="number" class="alocacao-pct-input pct-classe-input" data-classe-pct="previdencia" min="0" max="100" step="0.1" placeholder="0">
+                                                    <span>%</span>
+                                                </div>
+                                            </div>
+                                            <div class="pct-classe-barra-track"><div class="pct-classe-barra" style="--cor:#A78BFA; width:0%"></div></div>
+                                            <span class="pct-classe-valor-equiv" id="pct-equiv-previdencia"></span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="pct-exclusivo-rodape">
+                                    <div class="pct-rodape-total">
+                                        <span>Total alocado:</span>
+                                        <strong id="alocacao-pct-total-badge" class="alocacao-pct-total-badge">0%</strong>
+                                    </div>
+                                    <div class="pct-rodape-patrimonio" id="pct-rodape-patrimonio"></div>
+                                </div>
+                            </div>
+                            <div class="coord-section-wrapper">
+                                <div class="coord-section-header">
+                                    <div class="coord-section-header-left">
+                                        <svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                                        <div>
+                                            <h4>Comentários dos Coordenadores</h4>
+                                            <span>Diretrizes, alertas e pontos de destaque da coordenação</span>
+                                        </div>
+                                    </div>
+                                    <button type="button" id="btn-novo-comentario-coord" class="btn-coord-add" aria-label="Adicionar comentário de coordenador">
+                                        <svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+                                        Novo comentário
+                                    </button>
+                                </div>
+                                <div id="lista-comentarios-coord" class="comentarios-lista" aria-live="polite" aria-label="Comentários dos coordenadores">
+                                    <div class="comentarios-vazio" id="coord-vazio-estado">
+                                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                                        <p>Nenhum comentário de coordenação registrado.</p>
+                                        <span>Registre diretrizes, alertas ou pontos de destaque para este ativo neste dia.</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- MÓDULO: COMENTÁRIOS GERAIS (AUTORIA IDENTIFICADA) -->
+                            <div class="comentarios-gerais-wrapper">
+                                <div class="coord-section-header">
+                                    <div class="coord-section-header-left">
+                                        <svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                                        <div>
+                                            <h4>Comentários da Equipe</h4>
+                                            <span>Anotações gerais — autoria identificada por consultor</span>
+                                        </div>
+                                    </div>
+                                    <button type="button" id="btn-novo-comentario-geral" class="btn-coord-add secondary" aria-label="Adicionar comentário geral">
+                                        <svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+                                        Comentar
+                                    </button>
+                                </div>
+                                <div id="lista-comentarios-gerais" class="comentarios-lista" aria-live="polite" aria-label="Comentários da equipe">
+                                    <div class="comentarios-vazio" id="gerais-vazio-estado">
+                                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                                        <p>Nenhuma anotação registrada ainda.</p>
+                                        <span>Comentários identificam automaticamente o consultor responsável.</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button type="button" id="btn-salvar-dados-dia" class="btn-primario" style="margin-top:30px;">
+                                <svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+                                Arquivar Alocação e Tese
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ANALYTICS -->
+                <div id="container-analytics-portfolio" class="container-analytics-portfolio">
+                    <div class="form-section" style="border-left-color:#38BDF8;">
+                        <h3>Sincronização com o Simulador Algorítmico</h3>
+                        <p class="texto-standby" style="margin-bottom:15px;">Cole abaixo a chave criptográfica em Base64 exportada pelo simulador de otimização de portfólios para cruzar as métricas de fronteira eficiente de Markowitz.</p>
+                        <div style="display:flex;gap:12px;">
+                            <label for="input-token-base64" class="sr-only">Chave Base64 do simulador</label>
+                            <input type="text" id="input-token-base64" placeholder="Cole aqui a chave Base64 gerada no simulador…" style="margin-bottom:0;font-family:monospace;font-size:13px;" maxlength="250000" autocomplete="off" spellcheck="false">
+                            <button type="button" id="btn-processar-token-analytics" class="btn-primario" style="width:auto;padding:0 25px;">
+                                <svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+                                Importar
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="bloco-dashboard-metricas-quant" style="display:none;">
+                        <h4 class="label-textarea" style="margin-bottom:12px;text-transform:uppercase;font-size:11px;letter-spacing:0.5px;">Resumo de Desempenho Avançado</h4>
+                        <div class="analytics-grid-cards">
+                            <div class="card-metric-quant"><div class="metric-quant-title">Capital Inicial</div><div id="mq-capital-inicial" class="metric-quant-value">—</div></div>
+                            <div class="card-metric-quant"><div class="metric-quant-title">Saldo Atualizado</div><div id="mq-saldo-atualizado" class="metric-quant-value">—</div><div id="mq-ganho-nominal" class="metric-quant-sub sub-positivo"></div></div>
+                            <div class="card-metric-quant"><div class="metric-quant-title">Impacto dos Dividendos</div><div id="mq-impacto-dividendos" class="metric-quant-value">—</div></div>
+                            <div class="card-metric-quant"><div class="metric-quant-title">Rentabilidade Acumulada</div><div id="mq-rentabilidade-acumulada" class="metric-quant-value">—</div></div>
+                            <div class="card-metric-quant"><div class="metric-quant-title">Alpha de Jensen</div><div id="mq-alpha-jensen" class="metric-quant-value">—</div></div>
+                            <div class="card-metric-quant"><div class="metric-quant-title">Índice Sharpe</div><div id="mq-sharpe" class="metric-quant-value">—</div></div>
+                            <div class="card-metric-quant"><div class="metric-quant-title">Índice Sortino</div><div id="mq-sortino" class="metric-quant-value">—</div></div>
+                            <div class="card-metric-quant"><div class="metric-quant-title">Volatilidade Anual</div><div id="mq-volatilidade" class="metric-quant-value">—</div></div>
+                            <div class="card-metric-quant"><div class="metric-quant-title">Max Drawdown</div><div id="mq-max-drawdown" class="metric-quant-value" style="color:#f87171;">—</div></div>
+                            <div class="card-metric-quant"><div class="metric-quant-title">VaR Histórico 5%</div><div id="mq-var-historico" class="metric-quant-value">—</div></div>
+                            <div class="card-metric-quant"><div class="metric-quant-title">Beta vs Ibovespa</div><div id="mq-beta" class="metric-quant-value">—</div></div>
+                        </div>
+                        <div class="grid-2">
+                            <div class="correlation-wrapper">
+                                <h5 style="color:#fff;font-size:14px;font-weight:600;">Matriz de Correlação Multiativos</h5>
+                                <div style="overflow-x:auto;margin-top:15px;">
+                                    <table id="tabela-matriz-correlacao" class="tabela-correlacao" aria-label="Matriz de correlação"></table>
+                                </div>
+                            </div>
+                            <div class="correlation-wrapper">
+                                <h5 style="color:#fff;font-size:14px;font-weight:600;">Value at Risk (Distribuição) &amp; Curva de Drawdown</h5>
+                                <div class="visual-chart-box" aria-hidden="true">
+                                    <div class="chart-line-var" style="left:25%;"><span>VaR 5%</span></div>
+                                    <div class="chart-bar-mock danger-zone" style="height:10%;"></div>
+                                    <div class="chart-bar-mock danger-zone" style="height:25%;"></div>
+                                    <div class="chart-bar-mock" style="height:45%;"></div>
+                                    <div class="chart-bar-mock" style="height:75%;"></div>
+                                    <div class="chart-bar-mock" style="height:95%;"></div>
+                                    <div class="chart-bar-mock" style="height:85%;"></div>
+                                    <div class="chart-bar-mock" style="height:55%;"></div>
+                                    <div class="chart-bar-mock" style="height:30%;"></div>
+                                    <div class="chart-bar-mock" style="height:12%;"></div>
+                                </div>
+                                <div class="drawdown-box" aria-hidden="true">
+                                    <div class="dd-zero-line"></div>
+                                    <div class="dd-bar" style="height:4%;"></div>
+                                    <div class="dd-bar" style="height:12%;"></div>
+                                    <div class="dd-bar" style="height:28%;"></div>
+                                    <div class="dd-bar" style="height:15%;"></div>
+                                    <div class="dd-bar" style="height:35%;"></div>
+                                    <div class="dd-bar" style="height:65%;"></div>
+                                    <div class="dd-bar" style="height:95%;"></div>
+                                    <div class="dd-bar" style="height:70%;"></div>
+                                    <div class="dd-bar" style="height:40%;"></div>
+                                    <div class="dd-bar" style="height:20%;"></div>
+                                    <div class="dd-bar" style="height:5%;"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- MODAL: QUESTIONÁRIO API -->
+    <div id="modal-questionario-api" class="modal-overlay oculto" role="dialog" aria-modal="true" aria-labelledby="modal-api-titulo">
+        <div class="modal-content modal-content-largo">
+            <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #1e293b;padding-bottom:15px;margin-bottom:20px;">
+                <h3 id="modal-api-titulo" style="margin:0;color:#f8fafc;font-size:22px;">Análise de Perfil do Investidor (API)</h3>
+                <button id="modal-api-btn-fechar" class="btn-fechar-modal" type="button" aria-label="Fechar questionário">
+                    <svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
+            </div>
+            <p style="color:#94a3b8;font-size:14px;margin-bottom:25px;">O sistema calculará as ponderações e os gatilhos regulatórios (Resolução CVM 30) automaticamente baseando-se nas 12 questões táticas.</p>
+            <div id="lista-questoes-api" style="max-height:55vh;overflow-y:auto;padding-right:15px;"></div>
+            <div class="modal-botoes mt-20" style="border-top:1px solid #1e293b;padding-top:20px;">
+                <button type="button" id="modal-api-btn-cancelar" class="btn-secundario">Cancelar</button>
+                <button type="button" id="modal-api-btn-calcular" class="btn-primario">
+                    <svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    Calcular Perfil
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: RESUMO SUITABILITY -->
+    <div id="modal-resumo-suitability" class="modal-overlay oculto" role="dialog" aria-modal="true" aria-labelledby="modal-resumo-titulo">
+        <div class="modal-content modal-content-largo">
+            <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #1e293b;padding-bottom:15px;margin-bottom:20px;">
+                <h3 id="modal-resumo-titulo" style="margin:0;color:#f8fafc;">Ficha Resumo: <span id="resumo-nome-cliente" style="color:#38BDF8;"></span></h3>
+                <button id="modal-resumo-fechar" class="btn-fechar-modal" type="button" aria-label="Fechar resumo">
+                    <svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
+            </div>
+            <!-- Tabs — onclick removido, gerenciado por JS via data-aba -->
+            <div class="tabs-navegacao-ativos" role="tablist">
+                <button class="tab-button active" type="button" role="tab" data-aba="resumo-aba-perfil">Perfil &amp; Financeiro</button>
+                <button class="tab-button" type="button" role="tab" data-aba="resumo-aba-objetivos">Objetivos</button>
+                <button class="tab-button" type="button" role="tab" data-aba="resumo-aba-restricoes">Restrições &amp; Preferências</button>
+            </div>
+            <div id="resumo-aba-perfil" class="resumo-aba active" role="tabpanel">
+                <div class="grid-3">
+                    <div class="resumo-dado-bloco"><span class="resumo-dado-titulo">Idade</span><div id="res-idade" class="resumo-dado-valor"></div></div>
+                    <div class="resumo-dado-bloco"><span class="resumo-dado-titulo">Estado Civil</span><div id="res-estado-civil" class="resumo-dado-valor"></div></div>
+                    <div class="resumo-dado-bloco"><span class="resumo-dado-titulo">Profissão</span><div id="res-profissao" class="resumo-dado-valor"></div></div>
+                    <div class="resumo-dado-bloco"><span class="resumo-dado-titulo">Renda Mensal</span><div id="res-renda" class="resumo-dado-valor"></div></div>
+                    <div class="resumo-dado-bloco"><span class="resumo-dado-titulo">Despesas Mensais</span><div id="res-despesas" class="resumo-dado-valor" style="color:#f87171;"></div></div>
+                    <div class="resumo-dado-bloco"><span class="resumo-dado-titulo">Aporte Mensal</span><div id="res-aporte" class="resumo-dado-valor" style="color:#4ade80;font-weight:bold;"></div></div>
+                    <div class="resumo-dado-bloco"><span class="resumo-dado-titulo">Imóveis</span><div id="res-imoveis" class="resumo-dado-valor"></div></div>
+                    <div class="resumo-dado-bloco"><span class="resumo-dado-titulo">Dívidas</span><div id="res-dividas" class="resumo-dado-valor" style="color:#f87171;"></div></div>
+                    <div class="resumo-dado-bloco"><span class="resumo-dado-titulo">Patrimônio Declarado</span><div id="res-patrimonio" class="resumo-dado-valor" style="color:#38BDF8;font-weight:bold;"></div></div>
+                </div>
+                <div class="grid-3 mt-10">
+                    <div class="resumo-dado-bloco"><span class="resumo-dado-titulo">Conhecimento</span><div id="res-conhecimento" class="resumo-dado-valor"></div></div>
+                    <div class="resumo-dado-bloco"><span class="resumo-dado-titulo">Pontuação API</span><div id="res-pontuacao" class="resumo-dado-valor" style="color:#94a3b8;"></div></div>
+                    <div class="resumo-dado-bloco"><span class="resumo-dado-titulo">Perfil (Sistema)</span><div id="res-perfil" class="resumo-dado-valor" style="color:#D4AF37;font-weight:bold;"></div></div>
+                </div>
+                <div class="resumo-dado-bloco mt-10"><span class="resumo-dado-titulo">Características / Aceitações</span><div id="res-caract" class="resumo-dado-valor"></div></div>
+                <div class="resumo-dado-bloco mt-10"><span class="resumo-dado-titulo">Resultado Esperado da Consultoria</span><div id="res-resultado" class="resumo-dado-valor"></div></div>
+            </div>
+            <div id="resumo-aba-objetivos" class="resumo-aba" role="tabpanel">
+                <table class="resumo-tabela">
+                    <thead><tr><th>Objetivo</th><th>Horizonte</th><th>Valor (R$)</th><th>Observação</th></tr></thead>
+                    <tbody id="resumo-tabela-objetivos-body"></tbody>
+                </table>
+            </div>
+            <div id="resumo-aba-restricoes" class="resumo-aba" role="tabpanel">
+                <div class="grid-2">
+                    <div class="resumo-dado-bloco"><span class="resumo-dado-titulo">Liquidez Exigida</span><div id="res-liquidez" class="resumo-dado-valor"></div></div>
+                    <div class="resumo-dado-bloco"><span class="resumo-dado-titulo">Tributação / Previdência</span><div id="res-tributacao" class="resumo-dado-valor"></div></div>
+                    <div class="resumo-dado-bloco"><span class="resumo-dado-titulo">Aversões (Não Investir)</span><div id="res-aversoes" class="resumo-dado-valor"></div></div>
+                    <div class="resumo-dado-bloco"><span class="resumo-dado-titulo">Preferências</span><div id="res-preferencias" class="resumo-dado-valor"></div></div>
+                </div>
+                <div class="resumo-dado-bloco mt-10"><span class="resumo-dado-titulo">Cenário Sucessório</span><div id="res-sucessorio" class="resumo-dado-valor"></div></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: FOLLOW-UP -->
+    <div id="modal-tarefa" class="modal-overlay oculto" role="dialog" aria-modal="true" aria-labelledby="modal-tarefa-titulo">
+        <div class="modal-content">
+            <h3 id="modal-tarefa-titulo">Novo follow-up</h3>
+            <p>Registre uma próxima ação para este cliente.</p>
+            <label for="tarefa-titulo" class="sr-only">Título do follow-up</label>
+            <input type="text" id="tarefa-titulo" placeholder="Ex: Revisar carteira do cliente" maxlength="200">
+            <label for="tarefa-data" class="sr-only">Data do follow-up</label>
+            <input type="date" id="tarefa-data">
+            <div class="modal-botoes">
+                <button id="modal-tarefa-cancelar" class="btn-secundario" type="button">Cancelar</button>
+                <button id="modal-tarefa-salvar" class="btn-primario" type="button">Salvar tarefa</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: RELATÓRIO -->
+    <div id="modal-relatorio-cliente" class="modal-overlay oculto" role="dialog" aria-modal="true" aria-labelledby="relatorio-titulo-cliente">
+        <div class="modal-content modal-content-largo modal-relatorio">
+            <div class="modal-relatorio-header">
+                <div>
+                    <span class="eyebrow">Relatório executivo</span>
+                    <h3 id="relatorio-titulo-cliente">Cliente</h3>
+                </div>
+                <button id="modal-relatorio-fechar" class="btn-fechar-modal" type="button" aria-label="Fechar relatório">
+                    <svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
+            </div>
+            <div id="relatorio-conteudo-cliente" class="relatorio-conteudo"></div>
+            <div class="modal-botoes">
+                <button id="btn-imprimir-relatorio" class="btn-secundario accent" type="button">
+                    <svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9V2h12v7"></path><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><path d="M6 14h12v8H6z"></path></svg>
+                    Imprimir / PDF
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: DATA -->
+    <div id="modal-data" class="modal-overlay oculto" role="dialog" aria-modal="true" aria-labelledby="modal-titulo">
+        <div class="modal-content">
+            <h3 id="modal-titulo">Título</h3>
+            <p id="modal-descricao">Descrição</p>
+            <label for="modal-input" class="sr-only">Selecione a data</label>
+            <input type="date" id="modal-input" class="input-modal-data" autocomplete="off">
+            <div class="modal-botoes">
+                <button id="modal-btn-cancelar" class="btn-secundario" type="button">Cancelar</button>
+                <button id="modal-btn-confirmar" class="btn-primario" type="button">Confirmar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: CONFIRMAÇÃO -->
+    <div id="modal-confirmacao" class="modal-overlay oculto" role="dialog" aria-modal="true" aria-labelledby="modal-conf-titulo">
+        <div class="modal-content">
+            <h3 id="modal-conf-titulo" style="color:#f87171;">Atenção!</h3>
+            <p id="modal-conf-descricao">Tem certeza que deseja continuar?</p>
+            <div class="modal-botoes">
+                <button id="modal-conf-btn-cancelar" class="btn-secundario" type="button">Cancelar</button>
+                <button id="modal-conf-btn-confirmar" class="btn-perigo" type="button">
+                    <svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                    Confirmar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: COMENTÁRIO COORDENADOR -->
+    <div id="modal-comentario-coord" class="modal-overlay oculto" role="dialog" aria-modal="true" aria-labelledby="modal-coord-titulo">
+        <div class="modal-content modal-coord">
+            <div class="modal-coord-header">
+                <div>
+                    <span class="eyebrow">Coordenação</span>
+                    <h3 id="modal-coord-titulo">Registrar comentário de coordenação</h3>
+                </div>
+                <button id="modal-coord-fechar" class="btn-fechar-modal" type="button" aria-label="Fechar">
+                    <svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+            </div>
+            <div class="modal-coord-body">
+                <div class="coord-campo-grupo">
+                    <label for="coord-autor" class="coord-label">Coordenador responsável</label>
+                    <input type="text" id="coord-autor" placeholder="Nome do coordenador" maxlength="80" autocomplete="off">
+                </div>
+                <div class="coord-campo-grupo">
+                    <label class="coord-label">Tipo de destaque</label>
+                    <div class="coord-tipo-grid" id="coord-tipo-grid" role="radiogroup" aria-label="Tipo de destaque">
+                        <button type="button" class="coord-tipo-btn active" data-tipo="diretriz">
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                            Diretriz
+                        </button>
+                        <button type="button" class="coord-tipo-btn" data-tipo="alerta">
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                            Alerta
+                        </button>
+                        <button type="button" class="coord-tipo-btn" data-tipo="oportunidade">
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                            Oportunidade
+                        </button>
+                        <button type="button" class="coord-tipo-btn" data-tipo="restricao">
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+                            Restrição
+                        </button>
+                        <button type="button" class="coord-tipo-btn" data-tipo="revisao">
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+                            Revisão
+                        </button>
+                        <button type="button" class="coord-tipo-btn" data-tipo="aprovacao">
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+                            Aprovação
+                        </button>
+                    </div>
+                </div>
+                <div class="coord-campo-grupo">
+                    <label class="coord-label">Prioridade</label>
+                    <div class="coord-prioridade-row" role="radiogroup" aria-label="Prioridade">
+                        <button type="button" class="coord-prior-btn active" data-prior="normal">Normal</button>
+                        <button type="button" class="coord-prior-btn" data-prior="alta">Alta</button>
+                        <button type="button" class="coord-prior-btn" data-prior="critica">Crítica</button>
+                    </div>
+                </div>
+                <div class="coord-campo-grupo">
+                    <label for="coord-titulo-input" class="coord-label">Título do ponto de destaque</label>
+                    <input type="text" id="coord-titulo-input" placeholder="Ex: Risco de liquidez em cenário de stress" maxlength="120" autocomplete="off">
+                </div>
+                <div class="coord-campo-grupo">
+                    <label for="coord-corpo" class="coord-label">Desenvolvimento / contexto</label>
+                    <textarea id="coord-corpo" placeholder="Detalhe o ponto levantado, fundamente a diretriz ou descreva o contexto do alerta…" rows="4" maxlength="2000"></textarea>
+                </div>
+                <div class="coord-campo-grupo">
+                    <label for="coord-acao" class="coord-label">Ação recomendada <span class="coord-label-opcional">(opcional)</span></label>
+                    <input type="text" id="coord-acao" placeholder="Ex: Reduzir exposição para no máximo 8% do portfólio" maxlength="200" autocomplete="off">
+                </div>
+            </div>
+            <div class="modal-botoes">
+                <button type="button" id="modal-coord-cancelar" class="btn-secundario">Cancelar</button>
+                <button type="button" id="modal-coord-salvar" class="btn-primario">
+                    <svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>
+                    Registrar comentário
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: COMENTÁRIO GERAL DA EQUIPE -->
+    <div id="modal-comentario-geral" class="modal-overlay oculto" role="dialog" aria-modal="true" aria-labelledby="modal-geral-titulo">
+        <div class="modal-content">
+            <h3 id="modal-geral-titulo">Adicionar comentário</h3>
+            <p style="color:#64748b;font-size:14px;margin-bottom:20px;">Seu nome será associado automaticamente ao comentário.</p>
+            <div class="coord-campo-grupo">
+                <label for="geral-corpo" class="coord-label">Comentário</label>
+                <textarea id="geral-corpo" placeholder="Digite sua anotação sobre este ativo…" rows="4" maxlength="1000"></textarea>
+            </div>
+            <div class="modal-botoes" style="margin-top:20px;">
+                <button type="button" id="modal-geral-cancelar" class="btn-secundario">Cancelar</button>
+                <button type="button" id="modal-geral-salvar" class="btn-primario">Publicar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- IFRAME OCULTO PARA IMPRESSÃO PDF — sem abrir guia nova -->
+    <iframe id="prisma-print-frame" aria-hidden="true" tabindex="-1"
+            style="position:fixed;top:-9999px;left:-9999px;width:1px;height:1px;border:none;opacity:0;pointer-events:none;"
+            title="Área de impressão Prisma"></iframe>
+
+    <script src="painel.js" defer></script>
+</body>
+</html>
