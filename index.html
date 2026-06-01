@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="
+        default-src 'self';
+        script-src 'self' https://cdn.jsdelivr.net;
+        style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+        font-src 'self' https://fonts.gstatic.com;
+        img-src 'self' data:;
+        connect-src 'self' https://jchzgqztsmvznjvrszet.supabase.co https://*.supabase.co wss://*.supabase.co;
+        object-src 'none';
+        base-uri 'self';
+        form-action 'self';
+        frame-ancestors 'none'
+    ">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="theme-color" content="#020617">
+    <title>Prisma Consultoria | Plataforma para Consultores</title>
+
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cpath d='M32 8 52 20v24L32 56 12 44V20L32 8z' fill='none' stroke='%2394A3B8' stroke-width='4' stroke-linejoin='round'/%3E%3Cpath d='M32 17 44 24v16l-12 7-12-7V24l12-7z' fill='none' stroke='%2338BDF8' stroke-width='3' stroke-linejoin='round'/%3E%3Cpath d='M32 17v30M20 24l24 16M44 24 20 40' stroke='%2394A3B8' stroke-width='2.5' stroke-linecap='round' opacity='.72'/%3E%3C/svg%3E">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
+</head>
+<body class="auth-body">
+
+    <!-- TELA DE ABERTURA (SPLASH) -->
+    <div id="splash-screen" class="splash-screen" aria-hidden="true">
+        <div class="splash-inner">
+            <div class="splash-logo-mark">
+                <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                    <path class="sp-hex-outer" d="M32 8 52 20v24L32 56 12 44V20L32 8z" fill="none" stroke="#94A3B8" stroke-width="4" stroke-linejoin="round"/>
+                    <path class="sp-hex-inner" d="M32 17 44 24v16l-12 7-12-7V24l12-7z" fill="none" stroke="#38BDF8" stroke-width="3" stroke-linejoin="round"/>
+                    <path class="sp-lines" d="M32 17v30M20 24l24 16M44 24 20 40" stroke="#94A3B8" stroke-width="2.5" stroke-linecap="round" opacity=".72"/>
+                </svg>
+            </div>
+            <div class="splash-wordmark">
+                <span class="splash-word-main">Prisma</span>
+                <span class="splash-word-sub">Consultoria</span>
+            </div>
+            <div class="splash-bar-wrap">
+                <div class="splash-bar"></div>
+            </div>
+        </div>
+    </div>
+
+    <main class="auth-page" id="auth-page" aria-label="Página de autenticação">
+        <section class="auth-brand" aria-label="Informações da plataforma">
+            <div class="brand-content">
+                <div class="brand-kicker">Plataforma para consultores</div>
+                <h1 class="auth-logo">
+                    Prisma <span>Consultoria</span>
+                </h1>
+                <p class="slogan">
+                    Inteligência e organização para a rotina de consultoria.
+                </p>
+                <p class="descricao">
+                    Centralize clientes, acompanhe carteiras e mantenha informações essenciais
+                    sobre ativos em um ambiente profissional, seguro e objetivo.
+                </p>
+                <div class="auth-metrics" aria-label="Recursos da plataforma">
+                    <div>
+                        <strong>Gestão de Clientes</strong>
+                        <span>Dados organizados por relacionamento e perfil de risco.</span>
+                    </div>
+                    <div>
+                        <strong>Visão de Carteiras</strong>
+                        <span>Composição patrimonial estruturada por classe de ativo.</span>
+                    </div>
+                    <div>
+                        <strong>Análise de Ativos</strong>
+                        <span>Decisões consistentes com histórico de comitês.</span>
+                    </div>
+                </div>
+            </div>
+            <!-- Decorative geometric grid overlay — purely visual, no interaction -->
+            <div class="auth-brand-deco" aria-hidden="true">
+                <svg viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg" class="brand-deco-svg">
+                    <path d="M200 60 280 105 280 195 200 240 120 195 120 105 200 60z" fill="none" stroke="rgba(56,189,248,0.07)" stroke-width="1.5"/>
+                    <path d="M200 90 258 123 258 189 200 222 142 189 142 123 200 90z" fill="none" stroke="rgba(56,189,248,0.06)" stroke-width="1"/>
+                    <path d="M200 30 300 87.5 300 202.5 200 260 100 202.5 100 87.5 200 30z" fill="none" stroke="rgba(56,189,248,0.04)" stroke-width="1"/>
+                    <line x1="200" y1="60" x2="200" y2="240" stroke="rgba(56,189,248,0.05)" stroke-width="1"/>
+                    <line x1="120" y1="105" x2="280" y2="195" stroke="rgba(56,189,248,0.04)" stroke-width="1"/>
+                    <line x1="280" y1="105" x2="120" y2="195" stroke="rgba(56,189,248,0.04)" stroke-width="1"/>
+                </svg>
+            </div>
+        </section>
+
+        <section class="auth-side" aria-label="Formulários de acesso">
+            <div class="caixa-auth">
+
+                <div id="mensagem-alerta" class="mensagem-alerta oculto" role="alert" aria-live="assertive"></div>
+
+                <!-- FORM LOGIN -->
+                <div id="form-login" class="form-container active" role="form" aria-label="Formulário de login">
+                    <div class="auth-form-header">
+                        <span>Painel Prisma</span>
+                        <h2>Acesse sua conta</h2>
+                        <p>Entre para gerenciar clientes, carteiras e ativos com segurança.</p>
+                    </div>
+                    <label for="login-email" class="sr-only">E-mail corporativo</label>
+                    <input type="email" id="login-email" name="email" placeholder="E-mail corporativo"
+                           autocomplete="email" maxlength="254" spellcheck="false">
+                    <label for="login-senha" class="sr-only">Senha</label>
+                    <input type="password" id="login-senha" name="password" placeholder="Senha"
+                           autocomplete="current-password" maxlength="128">
+                    <button id="btn-entrar" class="btn-primario" type="button">Entrar</button>
+                    <div class="links-uteis">
+                        <button type="button" class="link-btn" data-tela="form-recuperar">Esqueci minha senha</button>
+                        <button type="button" class="link-btn" data-tela="form-cadastro">Solicitar acesso à plataforma</button>
+                    </div>
+                </div>
+
+                <!-- FORM CADASTRO -->
+                <div id="form-cadastro" class="form-container" role="form" aria-label="Formulário de cadastro">
+                    <div class="auth-form-header">
+                        <span>Nova credencial</span>
+                        <h2>Criar conta</h2>
+                        <p>Preencha seus dados profissionais para solicitar acesso.</p>
+                    </div>
+                    <label for="cad-nome" class="sr-only">Nome completo</label>
+                    <input type="text" id="cad-nome" name="name" placeholder="Nome completo"
+                           autocomplete="name" maxlength="120" spellcheck="false">
+                    <label for="cad-email" class="sr-only">E-mail profissional</label>
+                    <input type="email" id="cad-email" name="email" placeholder="E-mail profissional"
+                           autocomplete="email" maxlength="254" spellcheck="false">
+                    <label for="cad-senha" class="sr-only">Senha (mínimo 8 caracteres)</label>
+                    <input type="password" id="cad-senha" name="password" placeholder="Crie uma senha (mín. 8 caracteres)"
+                           autocomplete="new-password" maxlength="128">
+                    <div id="senha-forca-wrap" class="senha-forca-wrap oculto" aria-live="polite">
+                        <div class="senha-forca-barra">
+                            <div id="senha-forca-fill" class="senha-forca-fill"></div>
+                        </div>
+                        <span id="senha-forca-texto" class="senha-forca-texto"></span>
+                    </div>
+                    <button id="btn-cadastrar" class="btn-primario" type="button">Cadastrar</button>
+                    <div class="links-uteis">
+                        <button type="button" class="link-btn" data-tela="form-login">Já possui conta? Fazer login</button>
+                    </div>
+                </div>
+
+                <!-- FORM RECUPERAÇÃO -->
+                <div id="form-recuperar" class="form-container" role="form" aria-label="Formulário de recuperação de senha">
+                    <div class="auth-form-header">
+                        <span>Recuperação</span>
+                        <h2>Recuperar senha</h2>
+                        <p>Informe seu e-mail para receber as instruções de redefinição.</p>
+                    </div>
+                    <label for="recuperar-email" class="sr-only">E-mail de cadastro</label>
+                    <input type="email" id="recuperar-email" name="email" placeholder="E-mail de cadastro"
+                           autocomplete="email" maxlength="254" spellcheck="false">
+                    <button id="btn-enviar-recuperacao" class="btn-primario" type="button">Enviar link de acesso</button>
+                    <div class="links-uteis">
+                        <button type="button" class="link-btn" data-tela="form-login">Voltar para o login</button>
+                    </div>
+                </div>
+
+                <!-- FORM NOVA SENHA -->
+                <div id="form-nova-senha" class="form-container" role="form" aria-label="Formulário de nova senha">
+                    <div class="auth-form-header">
+                        <span>Segurança</span>
+                        <h2>Criar nova senha</h2>
+                        <p>Defina uma nova senha para continuar acessando sua conta.</p>
+                    </div>
+                    <label for="nova-senha-input" class="sr-only">Nova senha</label>
+                    <input type="password" id="nova-senha-input" name="password" placeholder="Nova senha (mín. 8 caracteres)"
+                           autocomplete="new-password" maxlength="128">
+                    <button id="btn-salvar-nova-senha" class="btn-primario" type="button">Salvar nova senha</button>
+                </div>
+
+            </div>
+        </section>
+    </main>
+
+    <script src="script.js" defer></script>
+</body>
+</html>
