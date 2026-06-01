@@ -17,18 +17,539 @@
     ">
     <meta name="referrer" content="strict-origin-when-cross-origin">
     <meta name="robots" content="noindex, nofollow">
-    <meta name="theme-color" content="#020617">
-    <title>Prisma Consultoria | Plataforma para Consultores</title>
+    <meta name="theme-color" content="#0F172A">
+    <title>Prisma | Plataforma de Consultoria</title>
 
     <link rel="stylesheet" href="style.css">
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cpath d='M32 8 52 20v24L32 56 12 44V20L32 8z' fill='none' stroke='%232563EB' stroke-width='4' stroke-linejoin='round'/%3E%3Cpath d='M32 17 44 24v16l-12 7-12-7V24l12-7z' fill='none' stroke='%231D4ED8' stroke-width='3' stroke-linejoin='round'/%3E%3Cpath d='M32 17v30M20 24l24 16M44 24 20 40' stroke='%232563EB' stroke-width='2.5' stroke-linecap='round' opacity='.72'/%3E%3C/svg%3E">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
-</head>
-<body class="auth-body">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
-    <!-- TELA DE ABERTURA (SPLASH) -->
-    <div id="splash-screen" class="splash-screen" aria-hidden="true">
+        :root {
+            --color-primary: #2563EB;
+            --color-primary-dark: #1D4ED8;
+            --color-primary-light: #3B82F6;
+            --color-secondary: #0F172A;
+            --color-surface-bg: #0F172A;
+            --color-surface-card: #1E293B;
+            --color-surface-input: #0F172A;
+            --color-border: #334155;
+            --color-text-primary: #F8FAFC;
+            --color-text-secondary: #CBD5E1;
+            --color-text-tertiary: #94A3B8;
+            --color-success: #10B981;
+            --color-error: #EF4444;
+            --color-warning: #F59E0B;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        html, body { height: 100%; width: 100%; }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, var(--color-surface-bg) 0%, #1a2840 100%);
+            color: var(--color-text-primary);
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at 20% 50%, rgba(37, 99, 235, 0.1) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 80%, rgba(37, 99, 235, 0.05) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* Splash Screen */
+        #splash-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, var(--color-surface-bg) 0%, #1a2840 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            opacity: 1;
+            transition: opacity 0.8s ease-out;
+        }
+
+        #splash-screen.oculto {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .splash-inner {
+            text-align: center;
+            animation: splashFadeIn 0.6s ease-out;
+        }
+
+        .splash-logo-mark {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 32px;
+            animation: splashLogoScale 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .splash-logo-mark svg {
+            width: 100%;
+            height: 100%;
+            filter: drop-shadow(0 10px 20px rgba(37, 99, 235, 0.2));
+        }
+
+        .splash-wordmark {
+            margin-bottom: 32px;
+        }
+
+        .splash-word-main {
+            display: block;
+            font-size: 36px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            margin-bottom: 8px;
+            color: var(--color-text-primary);
+        }
+
+        .splash-word-sub {
+            display: block;
+            font-size: 16px;
+            letter-spacing: 2px;
+            color: var(--color-text-secondary);
+            text-transform: uppercase;
+        }
+
+        .splash-bar-wrap {
+            width: 120px;
+            height: 3px;
+            margin: 0 auto;
+            background: rgba(37, 99, 235, 0.1);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .splash-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--color-primary), var(--color-primary-light));
+            animation: splashBarFill 2s ease-out forwards;
+            border-radius: 2px;
+        }
+
+        @keyframes splashFadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes splashLogoScale { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        @keyframes splashBarFill { from { width: 0%; } to { width: 100%; } }
+
+        /* Main Layout */
+        main.auth-page {
+            position: relative;
+            z-index: 1;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            min-height: 100vh;
+            max-height: 100vh;
+            overflow-y: auto;
+        }
+
+        .auth-brand {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 60px 80px;
+            position: relative;
+            background: linear-gradient(135deg, rgba(15, 23, 42, 0.5) 0%, rgba(30, 41, 59, 0.3) 100%);
+            border-right: 1px solid var(--color-border);
+        }
+
+        .brand-content {
+            max-width: 500px;
+            z-index: 2;
+            position: relative;
+        }
+
+        .brand-kicker {
+            font-size: 12px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: var(--color-primary);
+            margin-bottom: 16px;
+            font-weight: 600;
+        }
+
+        .auth-logo {
+            font-size: 48px;
+            font-weight: 700;
+            line-height: 1.2;
+            margin-bottom: 24px;
+            letter-spacing: -1px;
+        }
+
+        .auth-logo span {
+            display: block;
+            color: var(--color-primary);
+            font-weight: 600;
+            margin-top: 4px;
+        }
+
+        .slogan {
+            font-size: 18px;
+            color: var(--color-text-secondary);
+            margin-bottom: 16px;
+            line-height: 1.6;
+            font-weight: 500;
+        }
+
+        .descricao {
+            font-size: 14px;
+            color: var(--color-text-tertiary);
+            line-height: 1.7;
+            margin-bottom: 48px;
+        }
+
+        .auth-metrics {
+            display: grid;
+            gap: 24px;
+        }
+
+        .auth-metrics > div {
+            padding: 20px;
+            border-radius: 12px;
+            background: rgba(37, 99, 235, 0.05);
+            border: 1px solid rgba(37, 99, 235, 0.1);
+            transition: var(--transition);
+        }
+
+        .auth-metrics > div:hover {
+            background: rgba(37, 99, 235, 0.08);
+            border-color: rgba(37, 99, 235, 0.2);
+            transform: translateX(4px);
+        }
+
+        .auth-metrics strong {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--color-text-primary);
+        }
+
+        .auth-metrics span {
+            font-size: 13px;
+            color: var(--color-text-tertiary);
+            line-height: 1.5;
+        }
+
+        .auth-brand-deco {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 400px;
+            height: 400px;
+            opacity: 0.3;
+            pointer-events: none;
+        }
+
+        .auth-side {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 60px;
+            position: relative;
+        }
+
+        .caixa-auth {
+            width: 100%;
+            max-width: 420px;
+        }
+
+        .form-container {
+            display: none;
+            animation: formSlideIn 0.4s ease-out;
+        }
+
+        .form-container.active {
+            display: block;
+        }
+
+        @keyframes formSlideIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .auth-form-header {
+            margin-bottom: 32px;
+        }
+
+        .auth-form-header span {
+            display: inline-block;
+            font-size: 12px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: var(--color-primary);
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .auth-form-header h2 {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            line-height: 1.2;
+        }
+
+        .auth-form-header p {
+            font-size: 14px;
+            color: var(--color-text-tertiary);
+            line-height: 1.6;
+        }
+
+        /* Form Inputs */
+        input[type="email"],
+        input[type="password"],
+        input[type="text"] {
+            width: 100%;
+            padding: 12px 16px;
+            margin-bottom: 16px;
+            background: var(--color-surface-input);
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            color: var(--color-text-primary);
+            font-size: 14px;
+            font-family: inherit;
+            transition: var(--transition);
+        }
+
+        input[type="email"]:focus,
+        input[type="password"]:focus,
+        input[type="text"]:focus {
+            outline: none;
+            border-color: var(--color-primary);
+            background: var(--color-surface-input);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        input::placeholder {
+            color: var(--color-text-tertiary);
+        }
+
+        /* Password Strength */
+        .senha-forca-wrap {
+            margin-bottom: 16px;
+        }
+
+        .senha-forca-barra {
+            width: 100%;
+            height: 4px;
+            background: var(--color-border);
+            border-radius: 2px;
+            overflow: hidden;
+            margin-bottom: 8px;
+        }
+
+        .senha-forca-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--color-error), var(--color-warning), var(--color-success));
+            transition: width 0.3s ease;
+            border-radius: 2px;
+        }
+
+        .senha-forca-texto {
+            font-size: 12px;
+            color: var(--color-text-tertiary);
+        }
+
+        /* Buttons */
+        .btn-primario {
+            width: 100%;
+            padding: 12px 24px;
+            margin-bottom: 24px;
+            background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            transition: var(--transition);
+            font-family: inherit;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-primario:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(37, 99, 235, 0.4);
+        }
+
+        .btn-primario:active {
+            transform: translateY(0);
+        }
+
+        .btn-primario:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Links */
+        .links-uteis {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .link-btn {
+            background: none;
+            border: none;
+            color: var(--color-primary);
+            font-size: 13px;
+            cursor: pointer;
+            padding: 0;
+            text-align: center;
+            transition: color 0.2s ease;
+            font-weight: 500;
+            font-family: inherit;
+        }
+
+        .link-btn:hover {
+            color: var(--color-primary-light);
+            text-decoration: underline;
+        }
+
+        /* Alert Message */
+        .mensagem-alerta {
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 24px;
+            font-size: 13px;
+            line-height: 1.5;
+            animation: alertSlideIn 0.3s ease-out;
+        }
+
+        .mensagem-alerta.sucesso {
+            background: rgba(16, 185, 129, 0.1);
+            color: #A7F3D0;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .mensagem-alerta.erro {
+            background: rgba(239, 68, 68, 0.1);
+            color: #FCA5A5;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        @keyframes alertSlideIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Screen Reader Only */
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border-width: 0;
+        }
+
+        /* Utility */
+        .oculto {
+            display: none !important;
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            main.auth-page {
+                grid-template-columns: 1fr;
+            }
+
+            .auth-brand {
+                padding: 40px;
+                border-right: none;
+                border-bottom: 1px solid var(--color-border);
+                min-height: auto;
+            }
+
+            .auth-side {
+                padding: 40px 20px;
+            }
+
+            .caixa-auth {
+                max-width: 100%;
+            }
+        }
+
+        @media (max-width: 640px) {
+            body {
+                font-size: 14px;
+            }
+
+            main.auth-page {
+                min-height: auto;
+                max-height: none;
+            }
+
+            .auth-brand {
+                padding: 32px 20px;
+            }
+
+            .auth-brand-deco {
+                width: 300px;
+                height: 300px;
+                opacity: 0.15;
+            }
+
+            .auth-logo {
+                font-size: 32px;
+            }
+
+            .slogan {
+                font-size: 16px;
+            }
+
+            .auth-metrics {
+                gap: 16px;
+            }
+
+            .auth-side {
+                padding: 32px 16px;
+            }
+
+            .auth-form-header h2 {
+                font-size: 24px;
+            }
+
+            input[type="email"],
+            input[type="password"],
+            input[type="text"] {
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- SPLASH SCREEN -->
+    <div id="splash-screen" aria-hidden="true">
         <div class="splash-inner">
             <div class="splash-logo-mark">
                 <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -50,16 +571,16 @@
     <main class="auth-page" id="auth-page" aria-label="Página de autenticação">
         <section class="auth-brand" aria-label="Informações da plataforma">
             <div class="brand-content">
-                <div class="brand-kicker">Plataforma para consultores</div>
+                <div class="brand-kicker">Plataforma de Consultoria</div>
                 <h1 class="auth-logo">
-                    Prisma <span>Consultoria</span>
+                    Prisma
+                    <span>Consultoria</span>
                 </h1>
                 <p class="slogan">
-                    Inteligência e organização para a rotina de consultoria.
+                    Inteligência e organização para sua rotina de consultoria.
                 </p>
                 <p class="descricao">
-                    Centralize clientes, acompanhe carteiras e mantenha informações essenciais
-                    sobre ativos em um ambiente profissional, seguro e objetivo.
+                    Centralize clientes, acompanhe carteiras e mantenha informações essenciais sobre ativos em um ambiente profissional, seguro e objetivo.
                 </p>
                 <div class="auth-metrics" aria-label="Recursos da plataforma">
                     <div>
@@ -76,7 +597,6 @@
                     </div>
                 </div>
             </div>
-            <!-- Decorative geometric grid overlay — purely visual, no interaction -->
             <div class="auth-brand-deco" aria-hidden="true">
                 <svg viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg" class="brand-deco-svg">
                     <path d="M200 60 280 105 280 195 200 240 120 195 120 105 200 60z" fill="none" stroke="rgba(56,189,248,0.07)" stroke-width="1.5"/>
@@ -91,10 +611,9 @@
 
         <section class="auth-side" aria-label="Formulários de acesso">
             <div class="caixa-auth">
-
                 <div id="mensagem-alerta" class="mensagem-alerta oculto" role="alert" aria-live="assertive"></div>
 
-                <!-- FORM LOGIN -->
+                <!-- LOGIN -->
                 <div id="form-login" class="form-container active" role="form" aria-label="Formulário de login">
                     <div class="auth-form-header">
                         <span>Painel Prisma</span>
@@ -102,11 +621,9 @@
                         <p>Entre para gerenciar clientes, carteiras e ativos com segurança.</p>
                     </div>
                     <label for="login-email" class="sr-only">E-mail corporativo</label>
-                    <input type="email" id="login-email" name="email" placeholder="E-mail corporativo"
-                           autocomplete="email" maxlength="254" spellcheck="false">
+                    <input type="email" id="login-email" name="email" placeholder="E-mail corporativo" autocomplete="email" maxlength="254" spellcheck="false">
                     <label for="login-senha" class="sr-only">Senha</label>
-                    <input type="password" id="login-senha" name="password" placeholder="Senha"
-                           autocomplete="current-password" maxlength="128">
+                    <input type="password" id="login-senha" name="password" placeholder="Senha" autocomplete="current-password" maxlength="128">
                     <button id="btn-entrar" class="btn-primario" type="button">Entrar</button>
                     <div class="links-uteis">
                         <button type="button" class="link-btn" data-tela="form-recuperar">Esqueci minha senha</button>
@@ -114,7 +631,7 @@
                     </div>
                 </div>
 
-                <!-- FORM CADASTRO -->
+                <!-- CADASTRO -->
                 <div id="form-cadastro" class="form-container" role="form" aria-label="Formulário de cadastro">
                     <div class="auth-form-header">
                         <span>Nova credencial</span>
@@ -122,14 +639,11 @@
                         <p>Preencha seus dados profissionais para solicitar acesso.</p>
                     </div>
                     <label for="cad-nome" class="sr-only">Nome completo</label>
-                    <input type="text" id="cad-nome" name="name" placeholder="Nome completo"
-                           autocomplete="name" maxlength="120" spellcheck="false">
+                    <input type="text" id="cad-nome" name="name" placeholder="Nome completo" autocomplete="name" maxlength="120" spellcheck="false">
                     <label for="cad-email" class="sr-only">E-mail profissional</label>
-                    <input type="email" id="cad-email" name="email" placeholder="E-mail profissional"
-                           autocomplete="email" maxlength="254" spellcheck="false">
+                    <input type="email" id="cad-email" name="email" placeholder="E-mail profissional" autocomplete="email" maxlength="254" spellcheck="false">
                     <label for="cad-senha" class="sr-only">Senha (mínimo 8 caracteres)</label>
-                    <input type="password" id="cad-senha" name="password" placeholder="Crie uma senha (mín. 8 caracteres)"
-                           autocomplete="new-password" maxlength="128">
+                    <input type="password" id="cad-senha" name="password" placeholder="Crie uma senha (mín. 8 caracteres)" autocomplete="new-password" maxlength="128">
                     <div id="senha-forca-wrap" class="senha-forca-wrap oculto" aria-live="polite">
                         <div class="senha-forca-barra">
                             <div id="senha-forca-fill" class="senha-forca-fill"></div>
@@ -142,7 +656,7 @@
                     </div>
                 </div>
 
-                <!-- FORM RECUPERAÇÃO -->
+                <!-- RECUPERAÇÃO -->
                 <div id="form-recuperar" class="form-container" role="form" aria-label="Formulário de recuperação de senha">
                     <div class="auth-form-header">
                         <span>Recuperação</span>
@@ -150,15 +664,14 @@
                         <p>Informe seu e-mail para receber as instruções de redefinição.</p>
                     </div>
                     <label for="recuperar-email" class="sr-only">E-mail de cadastro</label>
-                    <input type="email" id="recuperar-email" name="email" placeholder="E-mail de cadastro"
-                           autocomplete="email" maxlength="254" spellcheck="false">
+                    <input type="email" id="recuperar-email" name="email" placeholder="E-mail de cadastro" autocomplete="email" maxlength="254" spellcheck="false">
                     <button id="btn-enviar-recuperacao" class="btn-primario" type="button">Enviar link de acesso</button>
                     <div class="links-uteis">
                         <button type="button" class="link-btn" data-tela="form-login">Voltar para o login</button>
                     </div>
                 </div>
 
-                <!-- FORM NOVA SENHA -->
+                <!-- NOVA SENHA -->
                 <div id="form-nova-senha" class="form-container" role="form" aria-label="Formulário de nova senha">
                     <div class="auth-form-header">
                         <span>Segurança</span>
@@ -166,11 +679,9 @@
                         <p>Defina uma nova senha para continuar acessando sua conta.</p>
                     </div>
                     <label for="nova-senha-input" class="sr-only">Nova senha</label>
-                    <input type="password" id="nova-senha-input" name="password" placeholder="Nova senha (mín. 8 caracteres)"
-                           autocomplete="new-password" maxlength="128">
+                    <input type="password" id="nova-senha-input" name="password" placeholder="Nova senha (mín. 8 caracteres)" autocomplete="new-password" maxlength="128">
                     <button id="btn-salvar-nova-senha" class="btn-primario" type="button">Salvar nova senha</button>
                 </div>
-
             </div>
         </section>
     </main>
