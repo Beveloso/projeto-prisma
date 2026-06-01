@@ -1934,7 +1934,10 @@ function lerListaComentarios(registro) {
 /** Salva lista de comentários como registro especial no historico_alocacoes */
 async function persistirComentarios(classeEspecial, lista) {
     if (!clienteAtivo || !dataAtiva) return false;
-    const { error } = await clienteSupabase.from('historico_alocacoes').upsert({
+
+    console.log('[Prisma] 💾 Persistindo comentários:', { classeEspecial, quantidade: lista.length });
+
+    const dadosUpsert = {
         cliente_id:        clienteAtivo.id,
         data_registro:     dataAtiva,
         classe_ativo:      classeEspecial,
@@ -1942,14 +1945,27 @@ async function persistirComentarios(classeEspecial, lista) {
         tese_investimento: '',
         updated_at:        new Date().toISOString(),
         user_id:           idUsuarioLogado
-    }, { onConflict: 'cliente_id,data_registro,classe_ativo' });
-    if (error) { console.error('[Prisma] persistirComentarios:', error.message); return false; }
+    };
+
+    console.log('[Prisma] Dados para salvar:', { ...dadosUpsert, valores_alocacao: '[...JSON array...]' });
+
+    const { error } = await clienteSupabase.from('historico_alocacoes').upsert(dadosUpsert,
+        { onConflict: 'cliente_id,data_registro,classe_ativo' });
+
+    if (error) {
+        console.error('[Prisma] ❌ persistirComentarios erro:', error.message);
+        return false;
+    }
+
+    console.log('[Prisma] ✅ Comentários salvos com sucesso');
     return true;
 }
 
 async function carregarComentarios() {
     if (!clienteAtivo || !dataAtiva) return;
     try {
+        console.log('[Prisma] 🔄 Carregando comentários para cliente:', clienteAtivo.id, 'data:', dataAtiva);
+
         const [resCoord, resGeral] = await Promise.all([
             clienteSupabase.from('historico_alocacoes').select('valores_alocacao')
                 .eq('cliente_id',    clienteAtivo.id)
@@ -1963,13 +1979,19 @@ async function carregarComentarios() {
                 .maybeSingle()
         ]);
 
+        console.log('[Prisma] Resposta Coord:', { data: resCoord?.data, error: resCoord?.error });
+        console.log('[Prisma] Resposta Geral:', { data: resGeral?.data, error: resGeral?.error });
+
         cacheComentariosCoord = lerListaComentarios(resCoord?.data);
         cacheComentariosGeral = lerListaComentarios(resGeral?.data);
+
+        console.log('[Prisma] ✅ Cache Coord carregado:', cacheComentariosCoord.length, 'comentários');
+        console.log('[Prisma] ✅ Cache Geral carregado:', cacheComentariosGeral.length, 'comentários');
 
         renderizarComentariosCoord(cacheComentariosCoord);
         renderizarComentariosGerais(cacheComentariosGeral);
     } catch (err) {
-        console.error('[Prisma] carregarComentarios:', err);
+        console.error('[Prisma] ❌ carregarComentarios:', err);
     }
 }
 
