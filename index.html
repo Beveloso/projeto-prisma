@@ -47,13 +47,27 @@
             --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
             --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
             --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+            /* Variações de azul — luxury palette */
+            --color-sky:              #38BDF8;
+            --color-sky-light:        #7DD3FC;
+            --color-sky-dim:          #0EA5E9;
+            --color-indigo:           #6366F1;
+            --color-indigo-light:     #818CF8;
+            --color-bg-deep:          #050E1A;
+            --color-surface-glass:    rgba(15, 23, 42, 0.75);
+            --color-surface-elevated: #162032;
+            --color-border-sky:       rgba(56, 189, 248, 0.18);
+            --color-border-subtle:    rgba(56, 189, 248, 0.08);
+            --color-primary-glow:     rgba(37, 99, 235, 0.5);
+            --color-sky-glow:         rgba(56, 189, 248, 0.25);
         }
 
         html, body { height: 100%; width: 100%; }
 
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: linear-gradient(135deg, var(--color-surface-bg) 0%, #1a2840 100%);
+            background: linear-gradient(135deg, #050E1A 0%, #0F172A 45%, #1a2840 100%);
             color: var(--color-text-primary);
             overflow-x: hidden;
             position: relative;
@@ -66,8 +80,10 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: radial-gradient(circle at 20% 50%, rgba(37, 99, 235, 0.1) 0%, transparent 50%),
-                        radial-gradient(circle at 80% 80%, rgba(37, 99, 235, 0.05) 0%, transparent 50%);
+            background:
+                radial-gradient(circle at 18% 55%, rgba(37,  99, 235, 0.14) 0%, transparent 50%),
+                radial-gradient(circle at 82% 75%, rgba(56, 189, 248, 0.07) 0%, transparent 40%),
+                radial-gradient(circle at 58% 15%, rgba(99, 102, 241, 0.05) 0%, transparent 35%);
             pointer-events: none;
             z-index: 0;
         }
@@ -143,7 +159,7 @@
 
         .splash-bar {
             height: 100%;
-            background: linear-gradient(90deg, var(--color-primary), var(--color-primary-light));
+            background: linear-gradient(90deg, #2563EB, #38BDF8, #7DD3FC);
             animation: splashBarFill 2s ease-out forwards;
             border-radius: 2px;
         }
@@ -169,8 +185,9 @@
             justify-content: center;
             padding: 60px 80px;
             position: relative;
-            background: linear-gradient(135deg, rgba(15, 23, 42, 0.5) 0%, rgba(30, 41, 59, 0.3) 100%);
-            border-right: 1px solid var(--color-border);
+            background: linear-gradient(160deg, rgba(5, 14, 26, 0.65) 0%, rgba(15, 23, 42, 0.3) 100%);
+            border-right: 1px solid var(--color-border-sky);
+            overflow: hidden;
         }
 
         .brand-content {
@@ -181,9 +198,9 @@
 
         .brand-kicker {
             font-size: 12px;
-            letter-spacing: 1px;
+            letter-spacing: 2px;
             text-transform: uppercase;
-            color: var(--color-primary);
+            color: var(--color-sky);
             margin-bottom: 16px;
             font-weight: 600;
         }
@@ -198,7 +215,10 @@
 
         .auth-logo span {
             display: block;
-            color: var(--color-primary);
+            background: linear-gradient(135deg, #7DD3FC 0%, #2563EB 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
             font-weight: 600;
             margin-top: 4px;
         }
@@ -227,14 +247,16 @@
             padding: 20px;
             border-radius: 12px;
             background: rgba(37, 99, 235, 0.05);
-            border: 1px solid rgba(37, 99, 235, 0.1);
+            border: 1px solid rgba(56, 189, 248, 0.1);
+            border-radius: 12px;
             transition: var(--transition);
         }
 
         .auth-metrics > div:hover {
-            background: rgba(37, 99, 235, 0.08);
-            border-color: rgba(37, 99, 235, 0.2);
-            transform: translateX(4px);
+            background: rgba(37, 99, 235, 0.10);
+            border-color: rgba(56, 189, 248, 0.28);
+            box-shadow: 0 0 24px rgba(56, 189, 248, 0.08);
+            transform: translateX(6px);
         }
 
         .auth-metrics strong {
@@ -273,6 +295,16 @@
         .caixa-auth {
             width: 100%;
             max-width: 420px;
+            background: rgba(10, 22, 40, 0.88);
+            border: 1px solid var(--color-border-sky);
+            border-radius: 16px;
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            box-shadow:
+                0 30px 60px rgba(0, 0, 0, 0.55),
+                0 0 0 1px var(--color-border-subtle),
+                inset 0 1px 0 rgba(125, 211, 252, 0.06);
+            padding: 36px;
         }
 
         .form-container {
@@ -336,9 +368,9 @@
         input[type="password"]:focus,
         input[type="text"]:focus {
             outline: none;
-            border-color: var(--color-primary);
-            background: var(--color-surface-input);
-            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+            border-color: rgba(56, 189, 248, 0.5);
+            box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.1), 0 0 15px rgba(37, 99, 235, 0.2);
+            background: rgba(15, 23, 42, 0.95);
         }
 
         input::placeholder {
@@ -377,24 +409,40 @@
             width: 100%;
             padding: 12px 24px;
             margin-bottom: 24px;
-            background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+            background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 60%, #1e40af 100%);
             color: white;
             border: none;
-            border-radius: 8px;
+            border-radius: 10px;
             font-size: 14px;
             font-weight: 600;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.6px;
             cursor: pointer;
             transition: var(--transition);
             font-family: inherit;
-            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+            box-shadow: 0 4px 15px rgba(37, 99, 235, 0.45), 0 0 0 1px rgba(59, 130, 246, 0.2);
             position: relative;
             overflow: hidden;
         }
 
+        .btn-primario::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 60%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.08), transparent);
+            transform: skewX(-20deg);
+            transition: left 0.6s ease;
+        }
+
+        .btn-primario:hover::before {
+            left: 150%;
+        }
+
         .btn-primario:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(37, 99, 235, 0.4);
+            box-shadow: 0 8px 28px rgba(37, 99, 235, 0.65), 0 0 25px rgba(56, 189, 248, 0.18);
         }
 
         .btn-primario:active {
@@ -547,6 +595,16 @@
                 font-size: 16px;
             }
         }
+        /* Splash logo glow */
+        .splash-logo-mark svg {
+            filter: drop-shadow(0 0 12px rgba(125, 211, 252, 0.5))
+                    drop-shadow(0 0 4px rgba(56, 189, 248, 0.4));
+        }
+
+        @keyframes hexInnerPulse {
+            0%, 100% { opacity: 1; }
+            50%       { opacity: 0.65; }
+        }
     </style>
 </head>
 <body>
@@ -556,9 +614,9 @@
         <div class="splash-inner">
             <div class="splash-logo-mark">
                 <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                    <path class="sp-hex-outer" d="M32 8 52 20v24L32 56 12 44V20L32 8z" fill="none" stroke="#94A3B8" stroke-width="4" stroke-linejoin="round"/>
-                    <path class="sp-hex-inner" d="M32 17 44 24v16l-12 7-12-7V24l12-7z" fill="none" stroke="#38BDF8" stroke-width="3" stroke-linejoin="round"/>
-                    <path class="sp-lines" d="M32 17v30M20 24l24 16M44 24 20 40" stroke="#94A3B8" stroke-width="2.5" stroke-linecap="round" opacity=".72"/>
+                    <path class="sp-hex-outer" d="M32 8 52 20v24L32 56 12 44V20L32 8z" fill="none" stroke="#CBD5E1" stroke-width="4" stroke-linejoin="round"/>
+                    <path class="sp-hex-inner" d="M32 17 44 24v16l-12 7-12-7V24l12-7z" fill="none" stroke="#7DD3FC" stroke-width="3" stroke-linejoin="round" style="animation: hexInnerPulse 2.5s ease-in-out infinite"/>
+                    <path class="sp-lines" d="M32 17v30M20 24l24 16M44 24 20 40" stroke="#CBD5E1" stroke-width="2.5" stroke-linecap="round" opacity="1"/>
                 </svg>
             </div>
             <div class="splash-wordmark">
@@ -602,12 +660,12 @@
             </div>
             <div class="auth-brand-deco" aria-hidden="true">
                 <svg viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg" class="brand-deco-svg">
-                    <path d="M200 60 280 105 280 195 200 240 120 195 120 105 200 60z" fill="none" stroke="rgba(56,189,248,0.07)" stroke-width="1.5"/>
-                    <path d="M200 90 258 123 258 189 200 222 142 189 142 123 200 90z" fill="none" stroke="rgba(56,189,248,0.06)" stroke-width="1"/>
-                    <path d="M200 30 300 87.5 300 202.5 200 260 100 202.5 100 87.5 200 30z" fill="none" stroke="rgba(56,189,248,0.04)" stroke-width="1"/>
-                    <line x1="200" y1="60" x2="200" y2="240" stroke="rgba(56,189,248,0.05)" stroke-width="1"/>
-                    <line x1="120" y1="105" x2="280" y2="195" stroke="rgba(56,189,248,0.04)" stroke-width="1"/>
-                    <line x1="280" y1="105" x2="120" y2="195" stroke="rgba(56,189,248,0.04)" stroke-width="1"/>
+                    <path d="M200 60 280 105 280 195 200 240 120 195 120 105 200 60z" fill="none" stroke="rgba(56,189,248,0.16)" stroke-width="1.5"/>
+                    <path d="M200 90 258 123 258 189 200 222 142 189 142 123 200 90z" fill="none" stroke="rgba(56,189,248,0.12)" stroke-width="1"/>
+                    <path d="M200 30 300 87.5 300 202.5 200 260 100 202.5 100 87.5 200 30z" fill="none" stroke="rgba(56,189,248,0.08)" stroke-width="1"/>
+                    <line x1="200" y1="60" x2="200" y2="240" stroke="rgba(56,189,248,0.10)" stroke-width="1"/>
+                    <line x1="120" y1="105" x2="280" y2="195" stroke="rgba(56,189,248,0.08)" stroke-width="1"/>
+                    <line x1="280" y1="105" x2="120" y2="195" stroke="rgba(56,189,248,0.08)" stroke-width="1"/>
                 </svg>
             </div>
         </section>
@@ -689,6 +747,108 @@
         </section>
     </main>
 
+    <script>
+    /* ============================================================
+       Interactive Dots — vanilla JS canvas para auth-brand
+       (porta do componente React original para vanilla JS puro)
+    ============================================================ */
+    function initInteractiveDots() {
+        // Desabilitar em mobile (performance)
+        if (window.innerWidth < 768) return;
+
+        // Respeitar prefers-reduced-motion
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+        const DOT_COLOR = 'rgba(56, 189, 248, 0.38)';
+        const DOT_SIZE  = 16;
+
+        const authBrand = document.querySelector('.auth-brand');
+        if (!authBrand) return;
+
+        const canvas = document.createElement('canvas');
+        canvas.setAttribute('aria-hidden', 'true');
+        canvas.style.cssText =
+            'position:absolute;top:0;left:0;width:100%;height:100%;' +
+            'pointer-events:none;z-index:0;';
+        authBrand.insertBefore(canvas, authBrand.firstChild);
+
+        const ctx      = canvas.getContext('2d', { alpha: true });
+        const mousePos = { x: -9999, y: -9999 };
+        let   frame    = 0;
+        let   dots     = [];
+
+        function noise(x, y, z) {
+            const n = Math.sin(x * 12.9898 + y * 78.233 + z * 45.164) * 43758.5453;
+            return n - Math.floor(n);
+        }
+
+        function buildDots() {
+            dots = [];
+            const DIST = DOT_SIZE / 2;
+            const COLS = Math.ceil(canvas.width  / DIST) + 1;
+            const ROWS = Math.ceil(canvas.height / DIST) + 1;
+            for (let c = 0; c < COLS; c++)
+                for (let r = 0; r < ROWS; r++)
+                    dots.push({ x: c * DIST, y: r * DIST });
+        }
+
+        function resize() {
+            const rect  = authBrand.getBoundingClientRect();
+            canvas.width  = rect.width;
+            canvas.height = rect.height;
+            buildDots();
+        }
+        resize();
+
+        const resizeObs = new ResizeObserver(resize);
+        resizeObs.observe(authBrand);
+
+        const ACTUAL_W = DOT_SIZE * 0.72;
+        const MIN_W    = 0;
+
+        function calcRadius(dot) {
+            const rect   = authBrand.getBoundingClientRect();
+            const lx     = mousePos.x - rect.left;
+            const ly     = mousePos.y - rect.top;
+            const dx     = lx - dot.x;
+            const dy     = ly - dot.y;
+            const GREATER = Math.max(canvas.width, canvas.height);
+            const nv     = noise(dot.x, dot.y, frame);
+            let delta    = Math.sqrt(dx * dx + dy * dy) * (0.7 + nv * 0.5);
+            if (delta > GREATER / 2) delta = GREATER / 2;
+            const w = ACTUAL_W - (delta / (GREATER / 2)) * (ACTUAL_W - MIN_W);
+            return w / 2;
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = DOT_COLOR;
+            for (const dot of dots) {
+                const r = calcRadius(dot);
+                if (r <= 0) continue;
+                ctx.beginPath();
+                ctx.arc(dot.x, dot.y, r, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            frame++;
+            requestAnimationFrame(animate);
+        }
+        animate();
+
+        window.addEventListener('mousemove', e => {
+            mousePos.x = e.clientX;
+            mousePos.y = e.clientY;
+        });
+        window.addEventListener('touchmove', e => {
+            if (e.touches.length > 0) {
+                mousePos.x = e.touches[0].clientX;
+                mousePos.y = e.touches[0].clientY;
+            }
+        }, { passive: true });
+    }
+
+    document.addEventListener('DOMContentLoaded', initInteractiveDots);
+    </script>
     <script src="script.js" defer></script>
 </body>
 </html>
