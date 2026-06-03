@@ -263,6 +263,7 @@
 
         .auth-side {
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
             padding: 40px 60px;
@@ -433,9 +434,11 @@
 
         /* Alert Message */
         .mensagem-alerta {
+            width: 100%;
+            max-width: 420px;
             padding: 12px 16px;
             border-radius: 8px;
-            margin-bottom: 24px;
+            margin-bottom: 12px;
             font-size: 13px;
             line-height: 1.5;
             animation: alertSlideIn 0.3s ease-out;
@@ -610,8 +613,8 @@
         </section>
 
         <section class="auth-side" aria-label="Formulários de acesso">
+            <div id="mensagem-alerta" class="mensagem-alerta oculto" role="alert" aria-live="assertive"></div>
             <div class="caixa-auth">
-                <div id="mensagem-alerta" class="mensagem-alerta oculto" role="alert" aria-live="assertive"></div>
 
                 <!-- LOGIN -->
                 <div id="form-login" class="form-container active" role="form" aria-label="Formulário de login">

@@ -1943,8 +1943,7 @@ async function persistirComentarios(classeEspecial, lista) {
         classe_ativo:      classeEspecial,
         valores_alocacao:  [[JSON.stringify(lista)]],
         tese_investimento: '',
-        updated_at:        new Date().toISOString(),
-        user_id:           idUsuarioLogado
+        updated_at:        new Date().toISOString()
     };
 
     console.log('[Prisma] Dados para salvar:', { ...dadosUpsert, valores_alocacao: '[...JSON array...]' });
