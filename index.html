@@ -750,17 +750,15 @@
     <script>
     /* ============================================================
        Interactive Dots — vanilla JS canvas para auth-brand
-       (porta do componente React original para vanilla JS puro)
+       Reativo ao mouse: pontos crescem perto do cursor, somem longe
     ============================================================ */
     function initInteractiveDots() {
-        // Desabilitar em mobile (performance)
         if (window.innerWidth < 768) return;
-
-        // Respeitar prefers-reduced-motion
         if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
-        const DOT_COLOR = 'rgba(56, 189, 248, 0.38)';
+        const DOT_COLOR = 'rgba(56, 189, 248, 0.42)';
         const DOT_SIZE  = 16;
+        const ACTUAL_W  = DOT_SIZE * 0.72;
 
         const authBrand = document.querySelector('.auth-brand');
         if (!authBrand) return;
@@ -769,13 +767,15 @@
         canvas.setAttribute('aria-hidden', 'true');
         canvas.style.cssText =
             'position:absolute;top:0;left:0;width:100%;height:100%;' +
-            'pointer-events:none;z-index:0;';
+            'pointer-events:none;z-index:0;display:block;';
         authBrand.insertBefore(canvas, authBrand.firstChild);
 
         const ctx      = canvas.getContext('2d', { alpha: true });
         const mousePos = { x: -9999, y: -9999 };
         let   frame    = 0;
         let   dots     = [];
+        /* FIX CRÍTICO: rect cacheado — NÃO chamar getBoundingClientRect() por ponto por frame */
+        let   cachedRect = { left: 0, top: 0, width: 0, height: 0 };
 
         function noise(x, y, z) {
             const n = Math.sin(x * 12.9898 + y * 78.233 + z * 45.164) * 43758.5453;
@@ -793,56 +793,64 @@
         }
 
         function resize() {
-            const rect  = authBrand.getBoundingClientRect();
-            canvas.width  = rect.width;
-            canvas.height = rect.height;
+            /* FIX: aguardar layout real — só atualizar se dimensões > 0 */
+            const rect = authBrand.getBoundingClientRect();
+            if (rect.width === 0 || rect.height === 0) return;
+            canvas.width  = Math.round(rect.width);
+            canvas.height = Math.round(rect.height);
+            cachedRect    = rect;
             buildDots();
         }
-        resize();
 
-        const resizeObs = new ResizeObserver(resize);
-        resizeObs.observe(authBrand);
+        /* FIX: usar requestAnimationFrame para garantir layout completo antes de medir */
+        requestAnimationFrame(() => {
+            resize();
+            if (canvas.width === 0) setTimeout(resize, 150);
+        });
 
-        const ACTUAL_W = DOT_SIZE * 0.72;
-        const MIN_W    = 0;
-
-        function calcRadius(dot) {
-            const rect   = authBrand.getBoundingClientRect();
-            const lx     = mousePos.x - rect.left;
-            const ly     = mousePos.y - rect.top;
-            const dx     = lx - dot.x;
-            const dy     = ly - dot.y;
-            const GREATER = Math.max(canvas.width, canvas.height);
-            const nv     = noise(dot.x, dot.y, frame);
-            let delta    = Math.sqrt(dx * dx + dy * dy) * (0.7 + nv * 0.5);
-            if (delta > GREATER / 2) delta = GREATER / 2;
-            const w = ACTUAL_W - (delta / (GREATER / 2)) * (ACTUAL_W - MIN_W);
-            return w / 2;
-        }
+        new ResizeObserver(resize).observe(authBrand);
+        window.addEventListener('resize', resize);
 
         function animate() {
+            requestAnimationFrame(animate);
+            if (canvas.width === 0 || dots.length === 0) return;
+
             ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            /* FIX: calcular lx/ly UMA VEZ por frame, não por ponto */
+            const lx      = mousePos.x - cachedRect.left;
+            const ly      = mousePos.y - cachedRect.top;
+            const GREATER = Math.max(canvas.width, canvas.height);
+            const HALF_G  = GREATER / 2;
+
             ctx.fillStyle = DOT_COLOR;
             for (const dot of dots) {
-                const r = calcRadius(dot);
-                if (r <= 0) continue;
+                const dx    = lx - dot.x;
+                const dy    = ly - dot.y;
+                const nv    = noise(dot.x, dot.y, frame);
+                let delta   = Math.sqrt(dx * dx + dy * dy) * (0.7 + nv * 0.5);
+                if (delta > HALF_G) delta = HALF_G;
+                const w = ACTUAL_W - (delta / HALF_G) * ACTUAL_W;
+                if (w <= 0.5) continue;
                 ctx.beginPath();
-                ctx.arc(dot.x, dot.y, r, 0, Math.PI * 2);
+                ctx.arc(dot.x, dot.y, w / 2, 0, Math.PI * 2);
                 ctx.fill();
             }
             frame++;
-            requestAnimationFrame(animate);
         }
         animate();
 
+        /* Atualizar mouse E atualizar cachedRect ao mesmo tempo */
         window.addEventListener('mousemove', e => {
-            mousePos.x = e.clientX;
-            mousePos.y = e.clientY;
+            mousePos.x  = e.clientX;
+            mousePos.y  = e.clientY;
+            cachedRect  = authBrand.getBoundingClientRect();
         });
         window.addEventListener('touchmove', e => {
             if (e.touches.length > 0) {
                 mousePos.x = e.touches[0].clientX;
                 mousePos.y = e.touches[0].clientY;
+                cachedRect = authBrand.getBoundingClientRect();
             }
         }, { passive: true });
     }
