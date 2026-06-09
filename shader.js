@@ -92,7 +92,10 @@
         scene.add(new THREE.Mesh(geometry, material));
 
         /* ── Renderer ────────────────────────────────────────── */
-        var renderer = new THREE.WebGLRenderer({ antialias: false });
+        var renderer;
+        try {
+            renderer = new THREE.WebGLRenderer({ antialias: false });
+        } catch (e) { return; }
         renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
         renderer.domElement.style.cssText =
             'display:block;width:100%;height:100%;';
