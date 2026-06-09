@@ -19,6 +19,7 @@ let dataAtiva          = null;
 let emModoEdicao       = false;
 let analyticsModoAtivo = false;
 let autoriaTextosAtuais = {};
+let respostasAPIAtuais  = {};
 
 const TIPOS_ALERTA_PERMITIDOS = new Set(['sucesso', 'erro']);
 const LIMITE_TOKEN_ANALYTICS  = 250_000;
@@ -431,7 +432,7 @@ document.getElementById('modal-api-btn-calcular')?.addEventListener('click', () 
         lblAviso.style.display   = avisoGatilho ? 'block' : 'none';
     }
 
-    window.respostasAPIAtuais = respostasCliente;
+    respostasAPIAtuais = respostasCliente;
     document.getElementById('modal-questionario-api')?.classList.add('oculto');
     mostrarToast('Perfil API calculado com base na CVM 30!', 'sucesso');
 });
@@ -510,7 +511,7 @@ function abrirFormNovoCliente() {
     const pontPerf = document.getElementById('perfil-investidor-pontuacao');
     if (resPerf)  resPerf.value  = 'Pendente';
     if (pontPerf) pontPerf.value = '0';
-    window.respostasAPIAtuais = {};
+    respostasAPIAtuais = {};
     document.querySelectorAll('#lista-questoes-api input').forEach(r => r.checked = false);
     document.getElementById('estado-vazio')?.classList.remove('active');
     document.getElementById('container-workspace-cliente')?.classList.remove('active');
@@ -542,7 +543,7 @@ document.getElementById('btn-salvar-cliente')?.addEventListener('click', async (
         fin_dividas:           document.getElementById('fin-dividas')?.value || '',
         perfil_investidor:     document.getElementById('perfil-investidor-resultado')?.value || 'Pendente',
         perfil_pontuacao:      (() => { const v = parseInt(document.getElementById('perfil-investidor-pontuacao')?.value || '0', 10); return Number.isNaN(v) ? 0 : v; })(),
-        respostas_api:         window.respostasAPIAtuais || {},
+        respostas_api:         respostasAPIAtuais || {},
         perfil_caracteristicas:document.getElementById('perfil-caracteristicas')?.value || '',
         objetivos: [
             [document.getElementById('obj-reserva-val')?.value || '', document.getElementById('obj-reserva-obs')?.value || '', document.getElementById('obj-reserva-horizonte')?.value || 'Imediato'],
@@ -655,7 +656,7 @@ document.getElementById('btn-editar-suitability-ativo')?.addEventListener('click
     setText('display-pontuacao-calculada', `Pontuação: ${extra.perfil_pontuacao || 0} / 95`);
 
     // Restaura respostas do questionário
-    window.respostasAPIAtuais = extra.respostas_api || {};
+    respostasAPIAtuais = extra.respostas_api || {};
     document.querySelectorAll('#lista-questoes-api input').forEach(r => r.checked = false);
     if (extra.respostas_api) {
         for (const [qId, v] of Object.entries(extra.respostas_api)) {
@@ -759,7 +760,7 @@ document.getElementById('modal-resumo-fechar')?.addEventListener('click', () => 
 });
 
 /** Troca aba do resumo — com whitelist de IDs */
-window.mudarAbaResumo = function(abaId, botaoClicado) {
+function mudarAbaResumo(abaId, botaoClicado) {
     if (!ABAS_RESUMO_PERMITIDAS.has(abaId)) return;
     document.querySelectorAll('#modal-resumo-suitability .tab-button').forEach(b => b.classList.remove('active'));
     if (botaoClicado) botaoClicado.classList.add('active');
@@ -1190,13 +1191,11 @@ ul{padding-left:18px}li{margin-bottom:4px}
 </style></head>
 <body><div class="marca">Prisma Consultoria</div><h1>${escaparHTML(titulo)}</h1>${conteudo}</body></html>`;
 
-    const doc = frame.contentDocument || frame.contentWindow?.document;
-    if (!doc) return;
-    doc.open(); doc.write(docHTML); doc.close();
-    frame.contentWindow.addEventListener('load', () => {
+    frame.srcdoc = docHTML;
+    frame.contentWindow?.addEventListener('load', () => {
         setTimeout(() => { frame.contentWindow.focus(); frame.contentWindow.print(); }, 200);
     });
-    setTimeout(() => { try { frame.contentWindow.print(); } catch {} }, 800);
+    setTimeout(() => { try { frame.contentWindow.print(); } catch (e) { console.warn('[Prisma] print fallback:', e); } }, 800);
 }
 
 document.getElementById('btn-gerar-relatorio-cliente')?.addEventListener('click', gerarRelatorioCliente);
@@ -1477,7 +1476,8 @@ async function carregarDadosAlocacaoETese() {
     const [ano, mes, dia] = dataAtiva.split('-');
     const badge = document.getElementById('data-badge-ativa');
     if (badge) {
-        badge.innerHTML = `<svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg> Dia: ${dia}/${mes}/${ano}`;
+        badge.innerHTML = '<svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>';
+        badge.appendChild(document.createTextNode(` Dia: ${dia}/${mes}/${ano}`));
     }
 
     try {
@@ -2321,6 +2321,10 @@ document.getElementById('btn-processar-token-analytics')?.addEventListener('clic
             mostrarToast('Token não possui estrutura de carteira válida.', 'erro');
             return;
         }
+        if ('__proto__' in carteiraObjeto || 'constructor' in carteiraObjeto) {
+            mostrarToast('Token com payload inválido.', 'erro');
+            return;
+        }
 
         const ativosFiltrados = Object.keys(carteiraObjeto).filter(k => !k.startsWith('__meta'));
         if (ativosFiltrados.length === 0) {
@@ -2833,12 +2837,10 @@ ${rod()}`;
         const iframeDoc = frame.contentDocument || frame.contentWindow?.document;
         if (!iframeDoc) return;
 
-        iframeDoc.open();
-        iframeDoc.write(docHTML);
-        iframeDoc.close();
+        frame.srcdoc = docHTML;
 
         // Aguarda recursos carregarem antes de imprimir
-        frame.contentWindow.addEventListener('load', () => {
+        frame.contentWindow?.addEventListener('load', () => {
             setTimeout(() => {
                 frame.contentWindow.focus();
                 frame.contentWindow.print();
@@ -2847,7 +2849,7 @@ ${rod()}`;
 
         // Fallback se load já disparou
         setTimeout(() => {
-            try { frame.contentWindow.print(); } catch {}
+            try { frame.contentWindow.print(); } catch (e) { console.warn('[Prisma] print fallback:', e); }
         }, 800);
     }
 
@@ -2984,6 +2986,7 @@ document.getElementById('btn-sair')?.addEventListener('click', async () => {
     } catch (err) {
         console.warn('[Prisma] Erro no logout:', err);
     } finally {
+        localStorage.removeItem(obterChaveTarefas());
         window.location.replace('index.html');
     }
 });
