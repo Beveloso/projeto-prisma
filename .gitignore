@@ -1,0 +1,44 @@
+# Claude Code — sessões, histórico e banco do agente
+.claude/
+agentdb.rvf
+agentdb.rvf.lock
+
+# Variáveis de ambiente e segredos
+.env
+.env.local
+.env.*.local
+*.env
+
+# Dependências (se o projeto migrar para Node)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Builds e distribuição
+dist/
+build/
+out/
+
+# Editores e IDEs
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Sistema operacional
+Thumbs.db
+.DS_Store
+Desktop.ini
+
+# Logs
+*.log
+logs/
+
+# Arquivos temporários
+*.tmp
+*.temp
+~$*
