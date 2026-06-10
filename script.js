@@ -5,7 +5,7 @@ const SUPABASE_URL  = 'https://jchzgqztsmvznjvrszet.supabase.co';
 const SUPABASE_KEY  = 'sb_publishable_SMarpZSlzxw0_R2FJSi3zw_L6qaaSfD';
 
 // Whitelist de tipos de alerta — bloco de injeção de classe CSS
-const TIPOS_ALERTA  = new Set(['sucesso', 'erro']);
+const TIPOS_ALERTA  = new Set(['sucesso', 'erro', 'aviso']);
 
 // Limite de tentativas de login (proteção anti-brute-force no cliente)
 const MAX_TENTATIVAS_LOGIN = 5;
@@ -21,7 +21,7 @@ const clienteSupabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY,
     auth: {
         autoRefreshToken: true,
         persistSession: true,
-        detectSessionInUrl: true
+        detectSessionInUrl: false
     }
 });
 
@@ -134,7 +134,7 @@ function iniciarSplash() {
 // NAVEGAÇÃO ENTRE TELAS
 // ==========================================
 function trocarTela(idAlvo) {
-    const IDsPermitidos = new Set(['form-login', 'form-cadastro', 'form-recuperar', 'form-nova-senha']);
+    const IDsPermitidos = new Set(['form-login', 'form-cadastro', 'form-recuperar', 'form-nova-senha', 'form-confirmacao-email']);
     if (!IDsPermitidos.has(idAlvo)) return;
 
     document.querySelectorAll('.form-container').forEach(f => f.classList.remove('active'));
@@ -297,8 +297,9 @@ document.getElementById('btn-cadastrar')?.addEventListener('click', async () => 
             // Mensagem genérica — não revela se o e-mail já existe
             mostrarAlerta('Não foi possível criar a conta. Tente novamente.', 'erro');
         } else {
-            mostrarAlerta('<b>Conta criada!</b> Verifique seu e-mail para confirmar o acesso.', 'sucesso');
-            setTimeout(() => trocarTela('form-login'), 2500);
+            const display = document.getElementById('email-confirmacao-display');
+            if (display) display.textContent = email;
+            trocarTela('form-confirmacao-email');
         }
     } catch (err) {
         mostrarAlerta('Erro de conexão. Verifique sua rede.', 'erro');
@@ -411,6 +412,20 @@ document.addEventListener('DOMContentLoaded', () => {
     // Registra listeners dos botões de navegação (substituem onclicks inline)
     document.querySelectorAll('[data-tela]').forEach(btn => {
         btn.addEventListener('click', () => trocarTela(btn.dataset.tela));
+    });
+
+    // Botões de mostrar/ocultar senha (event delegation — funciona mesmo em forms ocultos)
+    document.addEventListener('click', e => {
+        const btn = e.target.closest('.btn-toggle-senha');
+        if (!btn) return;
+        const wrap = btn.closest('.input-wrap-rel');
+        if (!wrap) return;
+        const input = wrap.querySelector('input');
+        if (!input) return;
+        const mostrando = input.type === 'text';
+        input.type = mostrando ? 'password' : 'text';
+        btn.setAttribute('aria-label', mostrando ? 'Mostrar senha' : 'Ocultar senha');
+        btn.style.color = mostrando ? '' : 'rgba(125,211,252,0.70)';
     });
 
     // BUG FIX: detecta o link de recuperação de senha ANTES de verificar sessão.

@@ -21,7 +21,7 @@ let analyticsModoAtivo = false;
 let autoriaTextosAtuais = {};
 let respostasAPIAtuais  = {};
 
-const TIPOS_ALERTA_PERMITIDOS = new Set(['sucesso', 'erro']);
+const TIPOS_ALERTA_PERMITIDOS = new Set(['sucesso', 'erro', 'aviso']);
 const LIMITE_TOKEN_ANALYTICS  = 250_000;
 const CLASSE_ALOCACAO_PERCENTUAL = 'alocacao_percentual';
 const CLASSE_REGISTRO_PERCENTUAL = '__alocacao_pct__';
@@ -1432,6 +1432,7 @@ async function carregarPercentuaisDaData() {
         if (data?.[0]?.valores_alocacao?.[0]?.[0]) {
             try { pctSalvo = JSON.parse(data[0].valores_alocacao[0][0]); } catch (e) { console.warn('[Prisma] JSON inválido em carregarPercentuaisDaData:', e); }
         }
+        pctAlvoSalvo = { ...pctSalvo };
         document.querySelectorAll('.alocacao-pct-input').forEach(inp => {
             const classe = inp.dataset.classePct;
             inp.value = pctSalvo[classe] != null ? pctSalvo[classe] : '';
@@ -1665,7 +1666,7 @@ async function salvarDadosAlocacao(apenasCriarDia = false) {
             document.querySelectorAll('.alocacao-pct-input').forEach(inp => {
                 const classe = inp.dataset.classePct;
                 const val = parseFloat(inp.value);
-                if (classe && !isNaN(val) && val >= 0) alocacaoPct[classe] = val;
+                if (classe && !isNaN(val) && val >= 0 && val <= 100) alocacaoPct[classe] = val;
             });
 
             // Guarda os percentuais como JSON serializado no campo valores_alocacao
@@ -1723,6 +1724,25 @@ function atualizarBarrasAlocacao() {
         if (classe) valores[classe] = val;
         total += val;
     });
+
+    // Aviso por classe — compara contra os valores arquivados no Supabase
+    const classesExcedidas = [];
+    Object.entries(valores).forEach(([classe, val]) => {
+        const alvo = pctAlvoSalvo[classe];
+        const item = document.querySelector(`.pct-classe-item[data-classe-pct="${CSS.escape(classe)}"]`);
+        if (item) {
+            const excede = alvo != null && alvo > 0 && val > alvo;
+            item.classList.toggle('pct-classe-over', excede);
+            if (excede) classesExcedidas.push({ classe, val, alvo });
+        }
+    });
+    if (classesExcedidas.length > 0) {
+        const nomes = { renda_fixa: 'Renda Fixa', credito_privado: 'Crédito Privado', acoes: 'Ações', fundos_imobiliarios: 'FIIs', fundos_investimento: 'Fundos', derivativos: 'Derivativos', previdencia: 'Previdência' };
+        const msg = classesExcedidas.map(({ classe, val, alvo }) =>
+            `<b>${nomes[classe] || classe}</b>: ${val.toFixed(1)}% (limite ${alvo.toFixed(1)}%)`
+        ).join(' · ');
+        mostrarToast(`⚠ Alocação acima do limite — ${msg}`, 'aviso');
+    }
 
     // Barras horizontais
     Object.entries(valores).forEach(([classe, val]) => {
@@ -1815,6 +1835,7 @@ function desenharDonut(valores, total) {
 }
 
 let alocacaoRAF = null;
+let pctAlvoSalvo = {}; /* percentuais arquivados no Supabase — referência para aviso de excesso */
 function agendarAtualizacaoBarrasAlocacao() {
     if (alocacaoRAF) cancelAnimationFrame(alocacaoRAF);
     alocacaoRAF = requestAnimationFrame(() => {
@@ -1935,8 +1956,6 @@ function lerListaComentarios(registro) {
 async function persistirComentarios(classeEspecial, lista) {
     if (!clienteAtivo || !dataAtiva) return false;
 
-    console.log('[Prisma] 💾 Persistindo comentários:', { classeEspecial, quantidade: lista.length });
-
     const dadosUpsert = {
         cliente_id:        clienteAtivo.id,
         data_registro:     dataAtiva,
@@ -1946,8 +1965,6 @@ async function persistirComentarios(classeEspecial, lista) {
         updated_at:        new Date().toISOString()
     };
 
-    console.log('[Prisma] Dados para salvar:', { ...dadosUpsert, valores_alocacao: '[...JSON array...]' });
-
     const { error } = await clienteSupabase.from('historico_alocacoes').upsert(dadosUpsert,
         { onConflict: 'cliente_id,data_registro,classe_ativo' });
 
@@ -1956,15 +1973,12 @@ async function persistirComentarios(classeEspecial, lista) {
         return false;
     }
 
-    console.log('[Prisma] ✅ Comentários salvos com sucesso');
     return true;
 }
 
 async function carregarComentarios() {
     if (!clienteAtivo || !dataAtiva) return;
     try {
-        console.log('[Prisma] 🔄 Carregando comentários para cliente:', clienteAtivo.id, 'data:', dataAtiva);
-
         const [resCoord, resGeral] = await Promise.all([
             clienteSupabase.from('historico_alocacoes').select('valores_alocacao')
                 .eq('cliente_id',    clienteAtivo.id)
@@ -1978,14 +1992,8 @@ async function carregarComentarios() {
                 .maybeSingle()
         ]);
 
-        console.log('[Prisma] Resposta Coord:', { data: resCoord?.data, error: resCoord?.error });
-        console.log('[Prisma] Resposta Geral:', { data: resGeral?.data, error: resGeral?.error });
-
         cacheComentariosCoord = lerListaComentarios(resCoord?.data);
         cacheComentariosGeral = lerListaComentarios(resGeral?.data);
-
-        console.log('[Prisma] ✅ Cache Coord carregado:', cacheComentariosCoord.length, 'comentários');
-        console.log('[Prisma] ✅ Cache Geral carregado:', cacheComentariosGeral.length, 'comentários');
 
         renderizarComentariosCoord(cacheComentariosCoord);
         renderizarComentariosGerais(cacheComentariosGeral);
@@ -2321,11 +2329,6 @@ document.getElementById('btn-processar-token-analytics')?.addEventListener('clic
             mostrarToast('Token não possui estrutura de carteira válida.', 'erro');
             return;
         }
-        if ('__proto__' in carteiraObjeto || 'constructor' in carteiraObjeto) {
-            mostrarToast('Token com payload inválido.', 'erro');
-            return;
-        }
-
         const ativosFiltrados = Object.keys(carteiraObjeto).filter(k => !k.startsWith('__meta'));
         if (ativosFiltrados.length === 0) {
             mostrarToast('Token válido, porém nenhuma classe de ativo foi localizada.', 'erro');

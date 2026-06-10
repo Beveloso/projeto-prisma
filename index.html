@@ -13,7 +13,8 @@
         object-src 'none';
         base-uri 'self';
         form-action 'self';
-        frame-ancestors 'none'
+        frame-ancestors 'none';
+        upgrade-insecure-requests
     ">
     <meta name="referrer" content="strict-origin-when-cross-origin">
     <meta name="robots" content="noindex, nofollow">
@@ -193,10 +194,12 @@
             flex: 1;
             display: flex;
             align-items: center;
-            justify-content: space-between;
+            justify-content: center;
+            gap: 64px;
             padding: 60px 80px;
             gap: 48px;
             min-height: 100dvh;
+            background: transparent !important;
         }
 
         /* ================================
@@ -236,65 +239,65 @@
             border-radius: 0;
             background: none;
             /* New styles */
-            font-size: 11px;
-            letter-spacing: 3px;
+            font-size: 13px;
+            letter-spacing: 4px;
             text-transform: uppercase;
             color: var(--color-sky);
-            margin-bottom: 20px;
+            margin-bottom: 28px;
             font-weight: 600;
-            opacity: 0.90;
+            opacity: 0.85;
         }
 
         .auth-logo {
             font-family: 'Outfit', 'Inter', sans-serif;
-            font-size: 66px;
+            font-size: 92px;
             font-weight: 800;
-            line-height: 1.0;
-            margin: 0 0 6px;       /* override style.css margin:0 */
-            letter-spacing: -2.5px;
+            line-height: 0.95;
+            margin: 0 0 6px;
+            letter-spacing: -4px;
             color: #F8FAFC !important;
-            text-shadow: 0 2px 24px rgba(0,0,0,0.50);
+            text-shadow: 0 2px 40px rgba(0,0,0,0.55);
         }
 
         .auth-logo span {
             display: block;
             font-family: 'Outfit', 'Inter', sans-serif;
-            font-size: 40px;
+            font-size: 56px;
             font-weight: 600;
             background: linear-gradient(135deg, #7DD3FC 0%, #38BDF8 45%, #2563EB 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
-            color: transparent;    /* override style.css color: #2563EB */
-            margin-bottom: 28px;
-            letter-spacing: -1px;
+            color: transparent;
+            margin-bottom: 36px;
+            letter-spacing: -1.5px;
         }
 
         .slogan {
-            font-size: 17px;
+            font-size: 21px;
             color: rgba(203, 213, 225, 0.90) !important;
             margin-top: 0;
-            margin-bottom: 12px;
-            line-height: 1.65;
+            margin-bottom: 16px;
+            line-height: 1.6;
             font-weight: 400;
             text-shadow: 0 1px 12px rgba(0,0,0,0.35);
-            max-width: 440px;
+            max-width: 520px;
         }
 
         .descricao {
-            font-size: 13.5px;
+            font-size: 15.5px;
             color: rgba(148, 163, 184, 0.72) !important;
             margin-top: 0;
             line-height: 1.8;
-            margin-bottom: 44px;
-            max-width: 400px;
+            margin-bottom: 52px;
+            max-width: 480px;
         }
 
         /* Feature rows — minimal accent-left */
         .auth-metrics {
             display: flex;
             flex-direction: column;
-            gap: 14px;
+            gap: 22px;
             margin-top: 0;
         }
 
@@ -302,7 +305,7 @@
             /* Reset style.css white card styles */
             display: flex;
             flex-direction: column;
-            padding: 0 0 0 14px;
+            padding: 0 0 0 16px;
             min-height: unset;
             border: none;
             border-left: 2px solid rgba(56, 189, 248, 0.28);
@@ -314,15 +317,15 @@
 
         .auth-metrics > div:hover {
             border-left-color: rgba(56, 189, 248, 0.70);
-            transform: translateX(4px);
+            transform: translateX(5px);
         }
 
         .auth-metrics strong {
             display: block;
-            font-size: 13px;
+            font-size: 15px;
             font-weight: 600;
-            margin-bottom: 2px;
-            color: rgba(248, 250, 252, 0.88);
+            margin-bottom: 3px;
+            color: rgba(248, 250, 252, 0.90);
         }
 
         /* style.css sets ::before dots — hide them */
@@ -334,9 +337,9 @@
 
         .auth-metrics span {
             display: block;
-            font-size: 12px;
-            color: rgba(148, 163, 184, 0.62);
-            line-height: 1.5;
+            font-size: 14px;
+            color: rgba(148, 163, 184, 0.65);
+            line-height: 1.55;
         }
 
         /* Deco SVG — hidden in new full-screen layout */
@@ -363,30 +366,108 @@
         }
 
         .mensagem-alerta {
-            width: 100%;
-            padding: 12px 16px;
-            border-radius: 10px;
-            margin-bottom: 10px;
-            font-size: 13px;
+            position: fixed !important;
+            bottom: 32px !important;
+            left: 50% !important;
+            transform: translateX(-50%) !important;
+            top: auto !important;
+            right: auto !important;
+            width: min(480px, calc(100vw - 48px)) !important;
+            padding: 14px 18px;
+            border-radius: 12px;
+            margin-bottom: 0;
+            font-size: 13.5px;
             line-height: 1.5;
             animation: alertSlideIn 0.3s ease-out;
+            z-index: 99999;
         }
 
         .mensagem-alerta.sucesso {
-            background: rgba(16, 185, 129, 0.12);
+            background: rgba(16, 185, 129, 0.14);
             color: #A7F3D0;
-            border: 1px solid rgba(16, 185, 129, 0.30);
+            border: 1px solid rgba(16, 185, 129, 0.32);
         }
 
         .mensagem-alerta.erro {
-            background: rgba(239, 68, 68, 0.12);
+            background: rgba(239, 68, 68, 0.14);
             color: #FCA5A5;
-            border: 1px solid rgba(239, 68, 68, 0.30);
+            border: 1px solid rgba(239, 68, 68, 0.32);
+        }
+
+        .mensagem-alerta.aviso {
+            background: rgba(245, 158, 11, 0.14);
+            color: #FDE68A;
+            border: 1px solid rgba(245, 158, 11, 0.32);
         }
 
         @keyframes alertSlideIn {
-            from { opacity: 0; transform: translateY(-10px); }
-            to   { opacity: 1; transform: translateY(0); }
+            from { opacity: 0; transform: translateX(-50%) translateY(12px); }
+            to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+
+        /* ── Tela de confirmação de e-mail ── */
+        .confirmacao-email-card {
+            background: rgba(56, 189, 248, 0.06);
+            border: 1px solid rgba(56, 189, 248, 0.18);
+            border-radius: 14px;
+            padding: 24px 20px;
+            text-align: center;
+            margin: 8px 0 20px;
+        }
+        .confirmacao-email-icone {
+            margin-bottom: 14px;
+        }
+        .confirmacao-email-icone svg {
+            width: 52px;
+            height: 52px;
+        }
+        .confirmacao-email-addr {
+            display: block;
+            font-size: 13.5px;
+            color: #7DD3FC;
+            font-weight: 600;
+            margin-bottom: 20px;
+            word-break: break-all;
+        }
+        .confirmacao-passos {
+            text-align: left;
+            list-style: none;
+            counter-reset: passos;
+            padding: 0;
+            margin: 0 0 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .confirmacao-passos li {
+            counter-increment: passos;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            font-size: 13px;
+            color: #CBD5E1;
+            line-height: 1.5;
+        }
+        .confirmacao-passos li::before {
+            content: counter(passos);
+            flex-shrink: 0;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: rgba(37, 99, 235, 0.28);
+            border: 1px solid rgba(56, 189, 248, 0.30);
+            color: #7DD3FC;
+            font-size: 11px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 1px;
+        }
+        .confirmacao-obs {
+            font-size: 12px;
+            color: #475569;
+            margin: 0;
         }
 
         .caixa-auth {
@@ -481,7 +562,7 @@
         input::placeholder { color: rgba(148, 163, 184, 0.60); }
 
         /* Password Strength */
-        .senha-forca-wrap { margin-bottom: 14px; }
+        .senha-forca-wrap { margin-bottom: 14px; margin-top: -6px; }
 
         .senha-forca-barra {
             width: 100%;
@@ -554,37 +635,191 @@
             transform: none;
         }
 
-        /* Links — reset style.css border-top divider */
+        /* Links — horizontal layout */
         .links-uteis {
             display: flex;
-            flex-direction: column;
-            gap: 10px;
+            flex-direction: row;
+            align-items: center;
+            justify-content: center;
+            gap: 0;
             margin-top: 0;
             padding-top: 0;
             border-top: none;
+            flex-wrap: wrap;
+        }
+
+        .links-sep {
+            color: rgba(148, 163, 184, 0.25);
+            font-size: 14px;
+            padding: 0 2px;
+            user-select: none;
+            pointer-events: none;
         }
 
         .link-btn {
             background: none;
             border: none;
-            color: rgba(56, 189, 248, 0.75);
-            font-size: 13px;
+            color: rgba(148, 163, 184, 0.55);
+            font-size: 12.5px;
             cursor: pointer;
-            padding: 4px 0;
+            padding: 4px 10px;
             text-align: center;
             transition: color 0.2s ease;
             font-weight: 500;
             font-family: inherit;
             touch-action: manipulation;
-            min-height: 44px;
+            min-height: 36px;
             display: flex;
             align-items: center;
             justify-content: center;
         }
 
         .link-btn:hover {
-            color: var(--color-sky-light);
-            text-decoration: underline;
+            color: rgba(125, 211, 252, 0.90);
+        }
+
+        /* ================================
+           FORM FIELD GROUPS
+        ================================ */
+        .form-fields-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            margin-bottom: 20px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 7px;
+        }
+
+        .input-group input {
+            margin-bottom: 0 !important;
+        }
+
+        .input-label {
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.8px;
+            text-transform: uppercase;
+            color: rgba(148, 163, 184, 0.55);
+        }
+
+        .input-wrap-rel {
+            position: relative;
+        }
+
+        .input-wrap-rel input {
+            padding-right: 46px;
+        }
+
+        .btn-toggle-senha {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: rgba(148, 163, 184, 0.35);
+            padding: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: color 0.2s ease;
+            min-height: 0;
+            touch-action: manipulation;
+        }
+
+        .btn-toggle-senha:hover { color: rgba(148, 163, 184, 0.80); }
+
+        /* ================================
+           BRAND FEATURES — compact icon row
+        ================================ */
+        .brand-features {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            margin-top: 52px;
+        }
+
+        .brand-feature {
+            display: flex;
+            align-items: center;
+            gap: 13px;
+            opacity: 0.70;
+            transition: opacity 0.22s ease;
+        }
+
+        .brand-feature:hover { opacity: 1; }
+
+        .brand-feature-icon {
+            flex-shrink: 0;
+            width: 34px;
+            height: 34px;
+            border-radius: 9px;
+            background: rgba(56, 189, 248, 0.07);
+            border: 1px solid rgba(56, 189, 248, 0.14);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--color-sky);
+            align-self: flex-start;
+            transition: background 0.22s ease, border-color 0.22s ease;
+        }
+
+        .brand-feature-body {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+        }
+
+        .brand-feature span {
+            font-size: 14px;
+            font-weight: 500;
+            color: rgba(203, 213, 225, 0.80);
+            line-height: 1.4;
+        }
+
+        .brand-feature-desc {
+            font-size: 12.5px;
+            color: rgba(148, 163, 184, 0.65);
+            line-height: 1.55;
+            max-height: 0;
+            overflow: hidden;
+            opacity: 0;
+            margin: 0;
+            transform: translateY(-5px);
+            /* SAÍDA: rápida (ease-in) ~60% da duração de entrada.
+               transition-duration com !important forçado via propriedades longas
+               para sobrepor o `transition-duration: 0.01ms !important` do
+               prefers-reduced-motion em style.css (especificidade * < .class) */
+            transition-property: max-height, opacity, transform, margin-top !important;
+            transition-duration: 0.20s, 0.16s, 0.18s, 0.18s !important;
+            transition-timing-function: ease-in, ease-in, ease-in, ease-in !important;
+            transition-delay: 0s !important;
+        }
+
+        .brand-feature:hover {
+            opacity: 1;
+        }
+
+        /* ENTRADA: lenta, ease-out com overshoot suave — sensação fluida e premium */
+        .brand-feature:hover .brand-feature-desc {
+            max-height: 64px;
+            opacity: 1;
+            margin-top: 6px;
+            transform: translateY(0);
+            transition-property: max-height, opacity, transform, margin-top !important;
+            transition-duration: 0.38s, 0.30s, 0.34s, 0.30s !important;
+            transition-timing-function: cubic-bezier(0.22,1,0.36,1), ease-out, cubic-bezier(0.22,1,0.36,1), ease-out !important;
+            transition-delay: 0s, 0.04s, 0s, 0s !important;
+        }
+
+        .brand-feature:hover .brand-feature-icon {
+            background: rgba(56, 189, 248, 0.14);
+            border-color: rgba(56, 189, 248, 0.28);
         }
 
         /* Utility */
@@ -722,21 +957,33 @@
                 <p class="slogan">
                     Inteligência e organização para sua rotina de consultoria.
                 </p>
-                <p class="descricao">
-                    Centralize clientes, acompanhe carteiras e mantenha informações essenciais sobre ativos em um ambiente profissional, seguro e objetivo.
-                </p>
-                <div class="auth-metrics" aria-label="Recursos da plataforma">
-                    <div>
-                        <strong>Gestão de Clientes</strong>
-                        <span>Dados organizados por relacionamento e perfil de risco.</span>
+                <div class="brand-features" aria-label="Recursos da plataforma">
+                    <div class="brand-feature">
+                        <div class="brand-feature-icon" aria-hidden="true">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                        </div>
+                        <div class="brand-feature-body">
+                            <span>Gestão de Clientes</span>
+                            <p class="brand-feature-desc">Cadastre clientes com perfil de risco, segmento e dados de contato organizados em um único lugar.</p>
+                        </div>
                     </div>
-                    <div>
-                        <strong>Visão de Carteiras</strong>
-                        <span>Composição patrimonial estruturada por classe de ativo.</span>
+                    <div class="brand-feature">
+                        <div class="brand-feature-icon" aria-hidden="true">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+                        </div>
+                        <div class="brand-feature-body">
+                            <span>Visão de Carteiras</span>
+                            <p class="brand-feature-desc">Acompanhe a composição patrimonial de cada cliente estruturada por classe de ativo em tempo real.</p>
+                        </div>
                     </div>
-                    <div>
-                        <strong>Análise de Ativos</strong>
-                        <span>Decisões consistentes com histórico de comitês.</span>
+                    <div class="brand-feature">
+                        <div class="brand-feature-icon" aria-hidden="true">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                        </div>
+                        <div class="brand-feature-body">
+                            <span>Análise de Ativos</span>
+                            <p class="brand-feature-desc">Consulte o histórico de comitês e mantenha decisões de investimento consistentes e documentadas.</p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -761,16 +1008,27 @@
                     <div class="auth-form-header">
                         <span>Painel Prisma</span>
                         <h2>Acesse sua conta</h2>
-                        <p>Entre para gerenciar clientes, carteiras e ativos com segurança.</p>
                     </div>
-                    <label for="login-email" class="sr-only">E-mail corporativo</label>
-                    <input type="email" id="login-email" name="email" placeholder="E-mail corporativo" autocomplete="email" maxlength="254" spellcheck="false">
-                    <label for="login-senha" class="sr-only">Senha</label>
-                    <input type="password" id="login-senha" name="password" placeholder="Senha" autocomplete="current-password" maxlength="128">
+                    <div class="form-fields-stack">
+                        <div class="input-group">
+                            <label for="login-email" class="input-label">E-mail</label>
+                            <input type="email" id="login-email" name="email" placeholder="seu@email.com" autocomplete="email" maxlength="254" spellcheck="false">
+                        </div>
+                        <div class="input-group">
+                            <label for="login-senha" class="input-label">Senha</label>
+                            <div class="input-wrap-rel">
+                                <input type="password" id="login-senha" name="password" placeholder="••••••••" autocomplete="current-password" maxlength="128">
+                                <button type="button" class="btn-toggle-senha" id="toggle-login-senha" aria-label="Mostrar senha">
+                                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                     <button id="btn-entrar" class="btn-primario" type="button">Entrar</button>
                     <div class="links-uteis">
-                        <button type="button" class="link-btn" data-tela="form-recuperar">Esqueci minha senha</button>
-                        <button type="button" class="link-btn" data-tela="form-cadastro">Solicitar acesso à plataforma</button>
+                        <button type="button" class="link-btn" data-tela="form-recuperar">Esqueci a senha</button>
+                        <span class="links-sep" aria-hidden="true">·</span>
+                        <button type="button" class="link-btn" data-tela="form-cadastro">Criar conta</button>
                     </div>
                 </div>
 
@@ -779,14 +1037,26 @@
                     <div class="auth-form-header">
                         <span>Nova credencial</span>
                         <h2>Criar conta</h2>
-                        <p>Preencha seus dados profissionais para solicitar acesso.</p>
                     </div>
-                    <label for="cad-nome" class="sr-only">Nome completo</label>
-                    <input type="text" id="cad-nome" name="name" placeholder="Nome completo" autocomplete="name" maxlength="120" spellcheck="false">
-                    <label for="cad-email" class="sr-only">E-mail profissional</label>
-                    <input type="email" id="cad-email" name="email" placeholder="E-mail profissional" autocomplete="email" maxlength="254" spellcheck="false">
-                    <label for="cad-senha" class="sr-only">Senha (mínimo 8 caracteres)</label>
-                    <input type="password" id="cad-senha" name="password" placeholder="Crie uma senha (mín. 8 caracteres)" autocomplete="new-password" maxlength="128">
+                    <div class="form-fields-stack">
+                        <div class="input-group">
+                            <label for="cad-nome" class="input-label">Nome completo</label>
+                            <input type="text" id="cad-nome" name="name" placeholder="Seu nome" autocomplete="name" maxlength="120" spellcheck="false">
+                        </div>
+                        <div class="input-group">
+                            <label for="cad-email" class="input-label">E-mail</label>
+                            <input type="email" id="cad-email" name="email" placeholder="seu@email.com" autocomplete="email" maxlength="254" spellcheck="false">
+                        </div>
+                        <div class="input-group">
+                            <label for="cad-senha" class="input-label">Senha</label>
+                            <div class="input-wrap-rel">
+                                <input type="password" id="cad-senha" name="password" placeholder="Mínimo 8 caracteres" autocomplete="new-password" maxlength="128">
+                                <button type="button" class="btn-toggle-senha" id="toggle-cad-senha" aria-label="Mostrar senha">
+                                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                     <div id="senha-forca-wrap" class="senha-forca-wrap oculto" aria-live="polite">
                         <div class="senha-forca-barra">
                             <div id="senha-forca-fill" class="senha-forca-fill"></div>
@@ -795,7 +1065,7 @@
                     </div>
                     <button id="btn-cadastrar" class="btn-primario" type="button">Cadastrar</button>
                     <div class="links-uteis">
-                        <button type="button" class="link-btn" data-tela="form-login">Já possui conta? Fazer login</button>
+                        <button type="button" class="link-btn" data-tela="form-login">Já tenho conta</button>
                     </div>
                 </div>
 
@@ -804,14 +1074,42 @@
                     <div class="auth-form-header">
                         <span>Recuperação</span>
                         <h2>Recuperar senha</h2>
-                        <p>Informe seu e-mail para receber as instruções de redefinição.</p>
                     </div>
-                    <label for="recuperar-email" class="sr-only">E-mail de cadastro</label>
-                    <input type="email" id="recuperar-email" name="email" placeholder="E-mail de cadastro" autocomplete="email" maxlength="254" spellcheck="false">
+                    <div class="form-fields-stack">
+                        <div class="input-group">
+                            <label for="recuperar-email" class="input-label">E-mail de cadastro</label>
+                            <input type="email" id="recuperar-email" name="email" placeholder="seu@email.com" autocomplete="email" maxlength="254" spellcheck="false">
+                        </div>
+                    </div>
                     <button id="btn-enviar-recuperacao" class="btn-primario" type="button">Enviar link de acesso</button>
                     <div class="links-uteis">
                         <button type="button" class="link-btn" data-tela="form-login">Voltar para o login</button>
                     </div>
+                </div>
+
+                <!-- CONFIRMAÇÃO DE EMAIL -->
+                <div id="form-confirmacao-email" class="form-container" role="status" aria-label="Confirmação de e-mail">
+                    <div class="auth-form-header">
+                        <span>Quase lá!</span>
+                        <h2>Confirme seu e-mail</h2>
+                        <p>Enviamos um link de ativação para o endereço abaixo.</p>
+                    </div>
+                    <div class="confirmacao-email-card">
+                        <div class="confirmacao-email-icone" aria-hidden="true">
+                            <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <rect x="4" y="10" width="40" height="28" rx="5" fill="rgba(56,189,248,0.08)" stroke="rgba(56,189,248,0.35)" stroke-width="1.5"/>
+                                <path d="M4 16 L24 28 L44 16" stroke="rgba(56,189,248,0.55)" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+                            </svg>
+                        </div>
+                        <strong id="email-confirmacao-display" class="confirmacao-email-addr"></strong>
+                        <ol class="confirmacao-passos">
+                            <li>Abra seu e-mail no endereço acima</li>
+                            <li>Clique no link <strong>Confirmar meu acesso</strong></li>
+                            <li>Volte aqui e faça seu login normalmente</li>
+                        </ol>
+                        <p class="confirmacao-obs">Não recebeu? Verifique a caixa de spam ou aguarde alguns minutos.</p>
+                    </div>
+                    <button type="button" class="btn-primario" data-tela="form-login">Ir para o Login</button>
                 </div>
 
                 <!-- NOVA SENHA -->
@@ -819,10 +1117,18 @@
                     <div class="auth-form-header">
                         <span>Segurança</span>
                         <h2>Criar nova senha</h2>
-                        <p>Defina uma nova senha para continuar acessando sua conta.</p>
                     </div>
-                    <label for="nova-senha-input" class="sr-only">Nova senha</label>
-                    <input type="password" id="nova-senha-input" name="password" placeholder="Nova senha (mín. 8 caracteres)" autocomplete="new-password" maxlength="128">
+                    <div class="form-fields-stack">
+                        <div class="input-group">
+                            <label for="nova-senha-input" class="input-label">Nova senha</label>
+                            <div class="input-wrap-rel">
+                                <input type="password" id="nova-senha-input" name="password" placeholder="Mínimo 8 caracteres" autocomplete="new-password" maxlength="128">
+                                <button type="button" class="btn-toggle-senha" id="toggle-nova-senha" aria-label="Mostrar senha">
+                                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                     <button id="btn-salvar-nova-senha" class="btn-primario" type="button">Salvar nova senha</button>
                 </div>
             </div>
@@ -830,6 +1136,6 @@
     </main>
 
     <script src="script.js" defer></script>
-    <script src="shader.js" defer></script>
+    <script src="shader.js?v=4" defer></script>
 </body>
 </html>

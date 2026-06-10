@@ -501,6 +501,19 @@ textarea {
     animation: deslizarDaDireita 0.28s ease-out;
 }
 
+.mensagem-alerta.aviso {
+    display: block;
+    background: rgba(120, 53, 15, 0.55);
+    color: #FDE68A;
+    border: 1px solid rgba(245, 158, 11, 0.45);
+    animation: deslizarDaDireita 0.28s ease-out;
+}
+
+.pct-classe-item.pct-classe-over .pct-classe-input {
+    border-color: rgba(245, 158, 11, 0.65) !important;
+    background: rgba(120, 53, 15, 0.18) !important;
+}
+
 .auth-body .mensagem-alerta {
     top: 18px;
     left: 50%;
