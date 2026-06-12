@@ -1538,7 +1538,7 @@ textarea {
     z-index: 999999;
     display: flex;
     justify-content: center;
-    align-items: center;
+    align-items: flex-start;
     padding: 22px;
     backdrop-filter: blur(8px);
 }
@@ -1585,7 +1585,7 @@ textarea {
     width: 900px !important;
     max-width: 95vw;
     max-height: 90vh;
-    overflow-y: auto;
+    overflow: auto !important;
     padding: 34px;
 }
 
@@ -6107,6 +6107,28 @@ textarea:focus {
 .btn-sair-nav .svg-icon {
     width: 15px;
     height: 15px;
+}
+
+/* Home button — compact icon-only, left of user-menu */
+.btn-home-nav {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: var(--r-sm);
+    color: #64748b;
+    cursor: pointer;
+    transition: background 0.18s, border-color 0.18s, color 0.18s;
+    margin-right: auto;
+    flex-shrink: 0;
+}
+.btn-home-nav:hover {
+    background: rgba(56, 189, 248, 0.08);
+    border-color: rgba(56, 189, 248, 0.2);
+    color: #38bdf8;
 }
 
 /* =============================================

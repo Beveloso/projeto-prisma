@@ -1311,6 +1311,7 @@ document.getElementById('btn-editar-data')?.addEventListener('click', async () =
         dataAtiva = novaDataISO;
         carregarDiasTimeline();
     } catch (err) {
+        console.error('[Prisma] Erro ao alterar data — detalhes:', err);
         mostrarToast('Erro ao alterar data.', 'erro');
     }
 });
@@ -2993,3 +2994,16 @@ document.getElementById('btn-sair')?.addEventListener('click', async () => {
         window.location.replace('index.html');
     }
 });
+
+// ==========================================
+// 20. HOME — Voltar ao Dashboard
+// ==========================================
+function voltarAoDashboard() {
+    clienteAtivo = null;
+    document.getElementById('container-form-suitability')?.classList.remove('active');
+    document.getElementById('container-workspace-cliente')?.classList.remove('active');
+    document.getElementById('estado-vazio')?.classList.add('active');
+    atualizarDashboardConsultor();
+}
+
+document.getElementById('btn-home-dashboard')?.addEventListener('click', voltarAoDashboard);
